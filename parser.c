@@ -1,4 +1,11 @@
+#include <assert.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "intern.h"
+#include "unitlib.h"
 
 typedef struct rule
 {
@@ -11,7 +18,9 @@ typedef struct rule
 static rule_t *rules = NULL;
 // The base rules
 static rule_t base_rules[NUM_BASE_UNITS];
-static bool initialized = false;
+
+#define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
+
 
 // Returns the last rule in the list
 static rule_t *last_rule(void)
@@ -120,8 +129,6 @@ static int parse_item(const char *str, unit_t *unit)
 
 bool ul_parse(const char *str, unit_t *unit)
 {
-	assert(initialized);
-
 	if (!str || !unit) {
 		ERROR("Invalid paramters");
 		return false;
@@ -165,8 +172,6 @@ bool ul_parse(const char *str, unit_t *unit)
 
 static bool add_rule(const char *symbol, const unit_t *unit)
 {
-	assert(initialized);
-
 	rule_t *rule = malloc(sizeof(*rule));
 	if (!rule) {
 		ERROR("Failed to allocate memory");
@@ -192,8 +197,6 @@ static bool add_rule(const char *symbol, const unit_t *unit)
 // parses a string like "symbol = def"
 bool ul_parse_rule(const char *rule)
 {
-	assert(initialized);
-
 	if (!rule) {
 		ERROR("Invalid parameter");
 		return false;
@@ -246,8 +249,9 @@ bool ul_parse_rule(const char *rule)
 
 void _ul_init_rules(void)
 {
+	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
-		base_rules[i].symbol = unit_symbol[i];
+		base_rules[i].symbol = _ul_symbols[i];
 
 		init_unit(&base_rules[i].unit);
 		base_rules[i].unit.exps[i] = 1;

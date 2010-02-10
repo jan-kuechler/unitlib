@@ -73,14 +73,4 @@ bool ul_parse_rule(const char *rule);
  */
 bool ul_parse(const char *str, unit_t *unit);
 
-bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, void *fmtp);
-
-static inline bool ul_print(const unit_t *unit, ul_format_t format, void *fmtp)
-{
-	//return ul_fprint(stdout, unit, format, fmtp);
-}
-
-bool ul_snprint(char *buffer, size_t buflen,
-                const unit_t *unit, ul_format_t format, void *fmtp);
-
 #endif /*UNITLIB_H*/
