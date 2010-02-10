@@ -36,6 +36,44 @@ void _ul_set_error(const char *func, int line, const char *fmt, ...)
 	va_end(ap);
 }
 
+static void add_unit(unit_t *to, const unit_t *other, int times)
+{
+	int i=0;
+	for (; i < NUM_BASE_UNITS; ++i) {
+		to->exps[i] += (times * other->exps[i]);
+	}
+}
+
+bool ul_combine(unit_t *unit, const unit_t *with)
+{
+	add_unit(unit, with, 1);
+	return true;
+}
+
+bool ul_inverse(unit_t *unit)
+{
+	int i=0;
+	for (; i < NUM_BASE_UNITS; ++i) {
+		unit->exps[i] = -unit->exps[i];
+	}
+	return true;
+}
+
+bool ul_sqrt(unit_t *unit)
+{
+	int i=0;
+	for (; i < NUM_BASE_UNITS; ++i) {
+		if ((unit->exps[i] % 2) != 0) {
+			ERROR("Cannot take root of an odd exponent");
+			return false;
+		}
+	}
+	for (; i < NUM_BASE_UNITS; ++i) {
+		unit->exps[i] /= 2;
+	}
+	return false;
+}
+
 void ul_debugging(bool flag)
 {
 	_ul_debugging = flag;

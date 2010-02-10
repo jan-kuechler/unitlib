@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define UL_NAME      "unitlib"
+#define UL_VERSION   "0.2b1"
+#define UL_FULL_NAME UL_NAME "-" UL_VERSION
+
 typedef enum base_unit
 {
 	U_METER,
@@ -25,7 +29,7 @@ typedef enum ul_format
 {
 	UL_FMT_PLAIN,
 	UL_FMT_LATEX_FRAC,
-	UL_FMT_LATEX_INLINE,
+	//TODO: UL_FMT_LATEX_INLINE,
 } ul_format_t;
 
 typedef struct unit
@@ -75,6 +79,28 @@ bool ul_parse_rule(const char *rule);
 bool ul_parse(const char *str, unit_t *unit);
 
 /**
+ * Multiplies a unit to a unit.
+ * @param unit One factor and destination of the operation
+ * @param with The other unit
+ * @return success
+ */
+bool ul_combine(unit_t *unit, const unit_t *with);
+
+/**
+ * Builds the inverse of a unit
+ * @param unit The unit
+ * @return success                                                                                                                    * @
+ */
+bool ul_inverse(unit_t *unit);
+
+/**
+ * Takes the square root of the unit
+ * @param unit The unit
+ * @return success
+ */
+bool ul_sqrt(unit_t *unit);
+
+/**
  * Prints the unit to a file according to the format
  * @param file   The file
  * @param unit   The unit
@@ -84,6 +110,13 @@ bool ul_parse(const char *str, unit_t *unit);
  */
 bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, void *fmtp);
 
+/**
+ * Prints the unit to stdout according to the format
+ * @param unit   The unit
+ * @param format The format
+ * @param fmtp   Additional format parameters
+ * @return success
+ */
 static inline bool ul_print(const unit_t *unit, ul_format_t format, void *fmtp)
 {
 	return ul_fprint(stdout, unit, format, fmtp);
