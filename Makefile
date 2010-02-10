@@ -15,14 +15,14 @@ HDRFILES = unitlib.h intern.h
 
 OBJFILES = unitlib.o parser.o format.o
 
-EXE = .exe
+TESTPROG = _test.exe
 
-.PHONY: test
+.PHONY: test clean allclean
 
 all: $(TARGET)
 
-test: _test$(EXE)
-	@./_test$(EXE)
+test: $(TESTPROG)
+	@./$(TESTPROG)
 	
 $(TARGET): $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
@@ -37,11 +37,12 @@ parser.o: parser.c $(HDRFILES)
 format.o: format.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o format.o -c format.c
 	
-_test$(EXE): $(TARGET) _test.c
-	@$(CC) -o_test.exe -L. _test.c -lunit
+$(TESTPROG): $(TARGET) _test.c
+	@$(CC) -o$(TESTPROG) -L. _test.c -lunit
 	
 clean:
 	@rm -f $(OBJFILES)
+	@rm -f $(TESTPROG)
 	
 allclean: clean
 	@rm -f $(TARGET)

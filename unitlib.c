@@ -23,10 +23,6 @@ const char *_ul_symbols[] = {
 	"m", "kg", "s", "A", "K", "mol", "C", "L",
 };
 
-size_t _ul_symlens[] = {
-	1, 2, 1, 1, 1, 3, 1, 1
-};
-
 // The last error message
 static char errmsg[1024];
 void _ul_set_error(const char *func, int line, const char *fmt, ...)
@@ -53,10 +49,8 @@ const char *ul_error(void)
 bool ul_init(void)
 {
 	assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
-	assert(sizeofarray(_ul_symlens) == NUM_BASE_UNITS);
 
 	debug("Initializing base rules");
-
 	_ul_init_rules();
 
 	return true;

@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 typedef enum base_unit
 {
@@ -72,5 +73,32 @@ bool ul_parse_rule(const char *rule);
  * @return success
  */
 bool ul_parse(const char *str, unit_t *unit);
+
+/**
+ * Prints the unit to a file according to the format
+ * @param file   The file
+ * @param unit   The unit
+ * @param format The format
+ * @param fmtp   Additional format parameters
+ * @return success
+ */
+bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, void *fmtp);
+
+static inline bool ul_print(const unit_t *unit, ul_format_t format, void *fmtp)
+{
+	return ul_fprint(stdout, unit, format, fmtp);
+}
+
+/**
+ * Prints the unit to a buffer according to the format
+ * @param buffer The buffer
+ * @param buflen Length of the buffer
+ * @param unit   The unit
+ * @param format The format
+ * @param fmtp   Additional format parameters
+ * @return success
+ */
+bool ul_snprintf(char *buffer, size_t buflen, const unit_t *unit,
+                 ul_format_t format, void *fmtp);
 
 #endif /*UNITLIB_H*/
