@@ -224,6 +224,8 @@ bool ul_parse_rule(const char *rule)
 	// Get the symbol
 	size_t skip   = skipspace(rule, 0);
 	size_t symend = nextspace(rule, skip);
+	if (symend > splitpos)
+		symend = splitpos;
 
 	debug("Allocate %d bytes", symend-skip + 1);
 	char *symbol = malloc(symend-skip + 1);

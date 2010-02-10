@@ -4,12 +4,14 @@
 
 int main(void)
 {
+	printf("Testing %s\n", UL_FULL_NAME);
+
 	if (!ul_init()) {
 		printf("init failed");
 	}
-	ul_debugging(false);
+	ul_debugging(true);
 
-	if (!ul_parse_rule("   N  =  kg^2 m s^-2  ")) {
+	if (!ul_parse_rule("   N=  kg^2 m s^-2  ")) {
 		printf("Error: %s\n", ul_error());
 	}
 
