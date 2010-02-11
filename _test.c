@@ -9,9 +9,9 @@ int main(void)
 	if (!ul_init()) {
 		printf("init failed");
 	}
-	ul_debugging(true);
+	ul_debugging(false);
 
-	if (!ul_parse_rule("   N=  kg^2 m s^-2  ")) {
+	if (!ul_parse_rule("   N=  kg m s^-2  ")) {
 		printf("Error: %s\n", ul_error());
 	}
 
@@ -20,8 +20,17 @@ int main(void)
 		printf("Error: %s\n", ul_error());
 	}
 
+
+	ul_fmtops_t fmtop;
+	fmtop.sort = true;
+	fmtop.order[0] = U_LEMMING;
+	fmtop.order[1] = U_KILOGRAM;
+	fmtop.order[2] = U_METER;
+	fmtop.order[3] = U_ANY;
+
+
 	printf("N^2 m^-1 = ");
-	if (!ul_print(&unit, UL_FMT_PLAIN, NULL)) {
+	if (!ul_print(&unit, UL_FMT_PLAIN, &fmtop)) {
 		printf("Error: %s\n", ul_error());
 	}
 	printf("\n");
@@ -31,6 +40,20 @@ int main(void)
 		printf("Error: %s\n", ul_error());
 	}
 	printf("snprint => '%s'\n", buffer);
+
+
+	{
+		printf("\n----------\n");
+
+		fmtop.order[2] = U_ANY;
+		unit_t n;
+		ul_parse("N", &n);
+		printf("1 N = 1 ");
+		ul_print(&n, UL_FMT_PLAIN, &fmtop);
+		printf("\n----------\n\n");
+	}
+
+
 
 	ul_print( &unit, UL_FMT_LATEX_FRAC, NULL);
 	printf("\n");

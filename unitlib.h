@@ -25,12 +25,20 @@ typedef enum base_unit
 	NUM_BASE_UNITS,
 } base_unit_t;
 
+#define U_ANY -1
+
 typedef enum ul_format
 {
 	UL_FMT_PLAIN,
 	UL_FMT_LATEX_FRAC,
-	//TODO: UL_FMT_LATEX_INLINE,
+	UL_FMT_LATEX_INLINE,
 } ul_format_t;
+
+typedef struct ul_format_ops
+{
+	bool sort;
+	int  order[NUM_BASE_UNITS];
+} ul_fmtops_t;
 
 typedef struct unit
 {
@@ -108,7 +116,8 @@ bool ul_sqrt(unit_t *unit);
  * @param fmtp   Additional format parameters
  * @return success
  */
-bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, void *fmtp);
+bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
+               ul_fmtops_t *fmtp);
 
 /**
  * Prints the unit to stdout according to the format
@@ -117,7 +126,8 @@ bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, void *fmtp);
  * @param fmtp   Additional format parameters
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format, void *fmtp)
+static inline bool ul_print(const unit_t *unit, ul_format_t format,
+                            ul_fmtops_t *fmtp)
 {
 	return ul_fprint(stdout, unit, format, fmtp);
 }
@@ -132,6 +142,6 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format, void *fmtp)
  * @return success
  */
 bool ul_snprintf(char *buffer, size_t buflen, const unit_t *unit,
-                 ul_format_t format, void *fmtp);
+                 ul_format_t format, ul_fmtops_t *fmtp);
 
 #endif /*UNITLIB_H*/
