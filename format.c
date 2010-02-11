@@ -67,11 +67,13 @@ static bool _putn(struct status *stat, int n)
 	return _puts(stat, buffer);
 }
 
-static bool print_sorted(struct status *stat, printer_t func)
+static bool print_sorted(struct status *stat, printer_t func, bool *first)
 {
 	bool printed[NUM_BASE_UNITS] = {};
-	bool first = true;
+	bool _first = true;
 	int i=0;
+
+	bool *fptr = first ? first : &_first;
 
 	// Print any sorted order
 	for (; i < NUM_BASE_UNITS; ++i) {
@@ -80,7 +82,7 @@ static bool print_sorted(struct status *stat, printer_t func)
 			break;
 		}
 		int exp = stat->unit->exps[unit];
-		CHECK(func(stat, unit, exp , &first));
+		CHECK(func(stat, unit, exp , fptr));
 		printed[unit] = true;
 	}
 	// Print the rest
@@ -88,24 +90,25 @@ static bool print_sorted(struct status *stat, printer_t func)
 		if (!printed[i]) {
 			int exp = stat->unit->exps[i];
 			if (exp != 0) {
-				CHECK(func(stat, i, exp , &first));
+				CHECK(func(stat, i, exp , fptr));
 			}
 		}
 	}
 	return true;
 }
 
-static bool print_normal(struct status *stat, printer_t func)
+static bool print_normal(struct status *stat, printer_t func, bool *first)
 {
 	int i=0;
-	bool first = true;
+	bool _first = true;
+	bool *fptr = first ? first : &_first;
 	for (; i < NUM_BASE_UNITS; ++i) {
-		CHECK(func(stat,i,stat->unit->exps[i],&first));
+		CHECK(func(stat,i,stat->unit->exps[i], fptr));
 	}
 	return true;
 }
 
-static bool p_one_plain(struct status* stat, int unit, int exp, bool *first)
+static bool _plain_one(struct status* stat, int unit, int exp, bool *first)
 {
 	if (exp == 0)
 		return true;
@@ -126,16 +129,30 @@ static bool p_one_plain(struct status* stat, int unit, int exp, bool *first)
 static bool p_plain(struct status *stat)
 {
 	if (stat->fmtp && stat->fmtp->sort) {
-		return print_sorted(stat, p_one_plain);
+		return print_sorted(stat, _plain_one, NULL);
 	}
 	else {
-		return print_normal(stat, p_one_plain);
+		return print_normal(stat, _plain_one, NULL);
 	}
 	return true;
 }
 
-static bool _latex_unit(struct status *stat, int unit, int exp)
+static bool _latex_one(struct status *stat, int unit, int exp, bool *first)
 {
+	if (exp == 0)
+		return true;
+	if (stat->extra) {
+		bool pos = *(bool*)stat->extra;
+		if (exp > 0 && !pos)
+			return true;
+		if (exp < 0) {
+			if (pos)
+				return true;
+			exp = -exp;
+		}
+	}
+	if (!*first)
+		CHECK(_putc(stat, ' '));
 	CHECK(_puts(stat, "\\text{"));
 	CHECK(_puts(stat, _ul_symbols[unit]));
 	CHECK(_puts(stat, "}"));
@@ -145,40 +162,37 @@ static bool _latex_unit(struct status *stat, int unit, int exp)
 		CHECK(_putn(stat, exp));
 		CHECK(_putc(stat, '}'));
 	}
+	*first = false;
 	return true;
 }
 
 static bool p_latex_frac(struct status *stat)
 {
-	int i=0;
-
 	bool first = true;
+	bool positive = true;
+	stat->extra = &positive;
 
 	CHECK(_puts(stat, "\\frac{"));
-	for (i=0; i < NUM_BASE_UNITS; ++i) {
-		int exp = stat->unit->exps[i];
-		if (exp > 0) {
-			if (!first)
-				CHECK(_puts(stat, "\\cdot"));
-			CHECK(_latex_unit(stat, i, exp));
-			first = false;
-		}
+	if (stat->fmtp && stat->fmtp->sort) {
+		print_sorted(stat, _latex_one, &first);
 	}
+	else {
+		print_normal(stat, _latex_one, &first);
+	}
+
 	if (first) {
 		// nothing up there...
 		CHECK(_putc(stat, '1'));
 	}
-
 	CHECK(_puts(stat, "}{"));
+
 	first = true;
-	for (i=0; i < NUM_BASE_UNITS; ++i) {
-		int exp = stat->unit->exps[i];
-		if (exp < 0) {
-			if (!first)
-				CHECK(_puts(stat, "\\cdot"));
-			CHECK(_latex_unit(stat, i, -exp));
-			first = false;
-		}
+	positive = false;
+	if (stat->fmtp && stat->fmtp->sort) {
+		print_sorted(stat, _latex_one, &first);
+	}
+	else {
+		print_normal(stat, _latex_one, &first);
 	}
 	if (first) {
 		CHECK(_putc(stat, '1'));
@@ -195,10 +209,7 @@ static bool p_latex_inline(struct status *stat)
 	for (i=0; i < NUM_BASE_UNITS; ++i) {
 		int exp = stat->unit->exps[i];
 		if (exp != 0) {
-			if (!first)
-				CHECK(_putc(stat, ' '));
-			CHECK(_latex_unit(stat, i, exp));
-			first = false;
+			CHECK(_latex_one(stat, i, exp, &first));
 		}
 	}
 	CHECK(_putc(stat, '$'));
@@ -235,6 +246,7 @@ bool ul_fprint(FILE *f,  const unit_t *unit, ul_format_t format, ul_fmtops_t *fm
 		.unit = unit,
 		.format = format,
 		.fmtp   = fmtp,
+		.extra  = NULL,
 	};
 
 	return _print(&status);
@@ -254,6 +266,7 @@ bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t for
 		.unit = unit,
 		.format = format,
 		.fmtp   = fmtp,
+		.extra  = NULL,
 	};
 
 	memset(buffer, 0, buflen);

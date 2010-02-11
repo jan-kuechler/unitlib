@@ -53,9 +53,7 @@ int main(void)
 		printf("\n----------\n\n");
 	}
 
-
-
-	ul_print( &unit, UL_FMT_LATEX_FRAC, NULL);
+	ul_print( &unit, UL_FMT_LATEX_FRAC, &fmtop);
 	printf("\n");
 
 	{
