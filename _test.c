@@ -2,6 +2,7 @@
 
 #include "unitlib.h"
 
+#ifndef SMASH
 int main(void)
 {
 	printf("Testing %s\n", UL_FULL_NAME);
@@ -62,10 +63,74 @@ int main(void)
 		printf("LaTeX: ");
 		ul_print(&unit, UL_FMT_LATEX_FRAC, NULL);
 		printf("\n");
-
 	}
 
 	ul_quit();
 
 	return 0;
 }
+#else
+
+void smashit(const char *str, bool asRule)
+{
+	bool ok = true;
+	if (asRule) {
+		ok = ul_parse_rule(str);
+	}
+	else {
+		unit_t u;
+		ok = ul_parse(str, &u);
+	}
+	if (ok) {
+		fprintf(stderr, "successfull?\n");
+	}
+	else {
+		fprintf(stderr, "error: %s\n", ul_error());
+	}
+}
+
+int main(void)
+{
+	ul_init();
+
+	srand(time(NULL));
+
+	{
+		fprintf(stderr, "Smash 1: ");
+		char test[] = "dil^aöjf lkfjda gäklj#ä#jadf klnhöklj213jl^^- kjäjre";
+		smashit(test, false);
+
+		fprintf(stderr, "Smash 2: ");
+		smashit(test, true);
+	}
+
+	{
+		size_t size = 4096;
+		int *_test = malloc(size);
+		int i=0;
+		for (; i < size / sizeof(int); ++i) {
+			_test[i] = rand();
+		}
+		char *test = (char*)_test;
+		for (i=0; i < size; ++i) {
+			if (!test[i])
+				test[i] = 42;
+		}
+
+		fprintf(stderr, "%4d bytes garbage: ", size );
+		smashit(test, false);
+		fprintf(stderr, "as rule:            ");
+		smashit(test, true);
+	}
+
+	{
+		char test[] = "  \t\t\n\n\r kg =     ";
+
+		printf("Evil: ");
+		smashit(test, true);
+	}
+
+	return 0;
+}
+
+#endif

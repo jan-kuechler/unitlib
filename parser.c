@@ -35,6 +35,17 @@ static rule_t *last_rule(void)
 	return NULL;
 }
 
+static rule_t *get_rule(const char *sym)
+{
+	rule_t *cur = rules;
+	while (cur) {
+		if (strcmp(cur->symbol, sym) == 0)
+			return cur;
+		cur = cur->next;
+	}
+	return NULL;
+}
+
 static void init_unit(unit_t *unit)
 {
 	memset(unit, 0, sizeof(*unit));
@@ -109,13 +120,7 @@ static int parse_item(const char *str, unit_t *unit)
 
 
 	// Find the matching rule
-	rule_t *rule = rules;
-	while (rule) {
-		if (strcmp(rule->symbol, symbol) == 0) {
-			break;
-		}
-		rule = rule->next;
-	}
+	rule_t *rule = get_rule(symbol);
 	if (!rule) {
 		ERROR("No matching rule found for '%s'", symbol);
 		return false;
@@ -179,7 +184,7 @@ static bool add_rule(const char *symbol, const unit_t *unit)
 	}
 	rule->next = NULL;
 
-	rule->symbol = strdup(symbol);
+	rule->symbol = symbol;
 	if (!rule->symbol) {
 		free(rule);
 		ERROR("Failed to allocate memory");
@@ -238,11 +243,18 @@ bool ul_parse_rule(const char *rule)
 	symbol[symend-skip] = '\0';
 	debug("Symbol is '%s'", symbol);
 
+	if (get_rule(symbol)) {
+		ERROR("You may not redefine '%s'", symbol);
+		free(symbol);
+		return false;
+	}
+
 	rule = rule + splitpos + 1; // ommiting the '='
 	debug("Rest definition is '%s'", rule);
 
 	unit_t unit;
 	if (!ul_parse(rule, &unit)) {
+		free(symbol);
 		return false;
 	}
 

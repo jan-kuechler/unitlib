@@ -16,6 +16,7 @@ HDRFILES = unitlib.h intern.h
 OBJFILES = unitlib.o parser.o format.o
 
 TESTPROG = _test.exe
+SMASHPROG = _smash.exe
 
 .PHONY: test clean allclean
 
@@ -23,6 +24,9 @@ all: $(TARGET)
 
 test: $(TESTPROG)
 	@./$(TESTPROG)
+	
+smash: $(SMASHPROG)
+	@./$(SMASHPROG)
 	
 $(TARGET): $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
@@ -39,6 +43,9 @@ format.o: format.c $(HDRFILES)
 	
 $(TESTPROG): $(TARGET) _test.c
 	@$(CC) -o $(TESTPROG) -L. _test.c -lunit
+	
+$(SMASHPROG): $(TARGET) _test.c
+	@$(CC) -o $(SMASHPROG) -L. -DSMASH _test.c -lunit
 	
 clean:
 	@rm -f $(OBJFILES)
