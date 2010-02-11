@@ -99,8 +99,8 @@ static int parse_item(const char *str, unit_t *unit)
 		char *endptr = NULL;
 		exp = strtol(str+symend+1, &endptr, 10);
 
- 		// the whole exp string was valid only if endptr is '\0'
-		if (*endptr) {
+ 		// the whole exp string was valid only if *endptr is '\0'
+		if (endptr && *endptr) {
 			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
 			return -1;
 		}

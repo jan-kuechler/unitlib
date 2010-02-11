@@ -108,6 +108,7 @@ static bool print_normal(struct status *stat, printer_t func, bool *first)
 	return true;
 }
 
+// Begin - plain
 static bool _plain_one(struct status* stat, int unit, int exp, bool *first)
 {
 	if (exp == 0)
@@ -136,7 +137,9 @@ static bool p_plain(struct status *stat)
 	}
 	return true;
 }
+// End - plain
 
+// Begin - LaTeX
 static bool _latex_one(struct status *stat, int unit, int exp, bool *first)
 {
 	if (exp == 0)
@@ -215,6 +218,7 @@ static bool p_latex_inline(struct status *stat)
 	CHECK(_putc(stat, '$'));
 	return true;
 }
+// End - LaTeX
 
 static bool _print(struct status *stat)
 {
