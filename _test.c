@@ -6,10 +6,10 @@ int main(void)
 {
 	printf("Testing %s\n", UL_FULL_NAME);
 
+	ul_debugging(true);
 	if (!ul_init()) {
 		printf("init failed");
 	}
-	ul_debugging(true);
 
 	if (!ul_parse_rule("   N=  kg m s^-2  ")) {
 		printf("Error: %s\n", ul_error());

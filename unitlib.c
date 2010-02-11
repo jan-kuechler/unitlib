@@ -91,6 +91,14 @@ bool ul_init(void)
 	debug("Initializing base rules");
 	_ul_init_rules();
 
+	const char *rulePath = getenv("UL_RULES");
+	if (rulePath) {
+		debug("UL_RULES is set: %s", rulePath);
+		if (!ul_load_rules(rulePath)) {
+			debug("Failed to load rules: %s", errmsg);
+		}
+	}
+
 	return true;
 }
 

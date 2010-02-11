@@ -38,7 +38,7 @@ format.o: format.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o format.o -c format.c
 	
 $(TESTPROG): $(TARGET) _test.c
-	@$(CC) -o$(TESTPROG) -L. _test.c -lunit
+	@$(CC) -o $(TESTPROG) -L. _test.c -lunit
 	
 clean:
 	@rm -f $(OBJFILES)

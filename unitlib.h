@@ -79,6 +79,13 @@ const char *ul_error(void);
 bool ul_parse_rule(const char *rule);
 
 /**
+ * Loads a rule file
+ * @param path Path to the file
+ * @return success
+ */
+bool ul_load_rules(const char *path);
+
+/**
  * Parses the unit definition from str to unit
  * @param str  The unit definition
  * @param unit The parsed unit will be stored here
@@ -141,7 +148,7 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-bool ul_snprintf(char *buffer, size_t buflen, const unit_t *unit,
-                 ul_format_t format, ul_fmtops_t *fmtp);
+bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
+                ul_format_t format, ul_fmtops_t *fmtp);
 
 #endif /*UNITLIB_H*/

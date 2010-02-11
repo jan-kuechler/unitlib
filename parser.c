@@ -249,6 +249,28 @@ bool ul_parse_rule(const char *rule)
 	return add_rule(symbol, &unit);
 }
 
+bool ul_load_rules(const char *path)
+{
+	FILE *f = fopen(path, "r");
+	if (!f) {
+		ERROR("Failed to open file '%s'", path);
+		return false;
+	}
+
+	bool ok = true;
+	char line[1024];
+	while (fgets(line, 1024, f)) {
+		size_t skip = skipspace(line, 0);
+		if (!line[skip] || line[skip] == '#')
+			continue; // empty line or comment
+		ok = ul_parse_rule(line);
+		if (!ok)
+			break;
+	}
+	fclose(f);
+	return ok;
+}
+
 void _ul_init_rules(void)
 {
 	int i=0;
