@@ -19,7 +19,6 @@ typedef bool (*printer_t)(struct status*,int,int,bool*);
 
 struct f_info
 {
-	int magic;
 	FILE *out;
 };
 
@@ -238,7 +237,8 @@ static bool _print(struct status *stat)
 	}
 }
 
-bool ul_fprint(FILE *f,  const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
+UL_API bool ul_fprint(FILE *f,  const unit_t *unit, ul_format_t format,
+                      ul_fmtops_t *fmtp)
 {
 	struct f_info info = {
 		.out = f,
@@ -256,7 +256,8 @@ bool ul_fprint(FILE *f,  const unit_t *unit, ul_format_t format, ul_fmtops_t *fm
 	return _print(&status);
 }
 
-bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
+                       ul_format_t format, ul_fmtops_t *fmtp)
 {
 	struct sn_info info = {
 		.buffer = buffer,

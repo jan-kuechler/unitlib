@@ -10,6 +10,9 @@ RANLIB = ranlib
 
 TARGET = libunit.a
 
+DLL = libunit.dll
+IMPLIB = libunit.lib
+
 SRCFILES = unitlib.c parser.c format.c
 HDRFILES = unitlib.h intern.h
 
@@ -22,6 +25,8 @@ SMASHPROG = _smash.exe
 
 all: $(TARGET)
 
+dll: $(DLL)
+
 test: $(TESTPROG)
 	@./$(TESTPROG)
 	
@@ -31,6 +36,9 @@ smash: $(SMASHPROG)
 $(TARGET): $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
 	@$(RANLIB) $(TARGET)
+	
+$(DLL): $(SRCFILES) $(HDRFILES)
+	@$(CC) $(CFLAGS) -shared -o $(DLL) $(SRCFILES) -Wl,--out-implib,$(IMPLIB)
 	
 unitlib.o: unitlib.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c

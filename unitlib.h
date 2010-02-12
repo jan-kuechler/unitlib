@@ -12,6 +12,20 @@
 #define UL_VERSION   "0.2b2"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
+#ifdef __cplusplus
+#define UL_LINKAGE extern "C"
+#else
+#define UL_LINKAGE
+#endif
+
+#if defined(UL_EXPORT_DLL)
+#define UL_API UL_LINKAGE __declspec(dllexport)
+#elif defined(UL_IMPORT_DLL)
+#define UL_API UL_LINKAGE __declspec(dllimport)
+#else
+#define UL_API UL_LINKAGE
+#endif
+
 typedef enum base_unit
 {
 	U_METER,
@@ -50,40 +64,40 @@ typedef struct unit
  * other ul_* function.
  * @return success
  */
-bool ul_init(void);
+UL_API bool ul_init(void);
 
 /**
  * Deinitializes the unitlib and frees all. This function
  * has to be called at the end of the program.
  * internals resources.
  */
-void ul_quit(void);
+UL_API void ul_quit(void);
 
 /**
  * Enables or disables debugging messages
  * @param flag Enable = true
  */
-void ul_debugging(bool flag);
+UL_API void ul_debugging(bool flag);
 
 /**
  * Returns the last error message
  * @return The last error message
  */
-const char *ul_error(void);
+UL_API const char *ul_error(void);
 
 /**
  * Parses a rule and adds it to the rule list
  * @param rule The rule to parse
  * @return success
  */
-bool ul_parse_rule(const char *rule);
+UL_API bool ul_parse_rule(const char *rule);
 
 /**
  * Loads a rule file
  * @param path Path to the file
  * @return success
  */
-bool ul_load_rules(const char *path);
+UL_API bool ul_load_rules(const char *path);
 
 /**
  * Parses the unit definition from str to unit
@@ -91,7 +105,7 @@ bool ul_load_rules(const char *path);
  * @param unit The parsed unit will be stored here
  * @return success
  */
-bool ul_parse(const char *str, unit_t *unit);
+UL_API bool ul_parse(const char *str, unit_t *unit);
 
 /**
  * Multiplies a unit to a unit.
@@ -99,21 +113,21 @@ bool ul_parse(const char *str, unit_t *unit);
  * @param with The other unit
  * @return success
  */
-bool ul_combine(unit_t *unit, const unit_t *with);
+UL_API bool ul_combine(unit_t *unit, const unit_t *with);
 
 /**
  * Builds the inverse of a unit
  * @param unit The unit
  * @return success                                                                                                                    * @
  */
-bool ul_inverse(unit_t *unit);
+UL_API bool ul_inverse(unit_t *unit);
 
 /**
  * Takes the square root of the unit
  * @param unit The unit
  * @return success
  */
-bool ul_sqrt(unit_t *unit);
+UL_API bool ul_sqrt(unit_t *unit);
 
 /**
  * Prints the unit to a file according to the format
@@ -123,8 +137,8 @@ bool ul_sqrt(unit_t *unit);
  * @param fmtp   Additional format parameters
  * @return success
  */
-bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
-               ul_fmtops_t *fmtp);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
+                      ul_fmtops_t *fmtp);
 
 /**
  * Prints the unit to stdout according to the format
@@ -148,7 +162,7 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
-                ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
+                       ul_format_t format, ul_fmtops_t *fmtp);
 
 #endif /*UNITLIB_H*/

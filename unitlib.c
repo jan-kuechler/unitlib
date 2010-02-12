@@ -11,7 +11,7 @@
 #define sizeofarray(ar) (sizeof((ar))/sizeof((ar)[0]))
 
 bool _ul_debugging = false;
-void _ul_debug(const char *fmt, ...)
+UL_LINKAGE void _ul_debug(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -25,7 +25,7 @@ const char *_ul_symbols[] = {
 
 // The last error message
 static char errmsg[1024];
-void _ul_set_error(const char *func, int line, const char *fmt, ...)
+UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...)
 {
 	snprintf(errmsg, 1024, "[%s:%d] ", func, line);
 	size_t len = strlen(errmsg);
@@ -44,13 +44,13 @@ static void add_unit(unit_t *to, const unit_t *other, int times)
 	}
 }
 
-bool ul_combine(unit_t *unit, const unit_t *with)
+UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 {
 	add_unit(unit, with, 1);
 	return true;
 }
 
-bool ul_inverse(unit_t *unit)
+UL_API bool ul_inverse(unit_t *unit)
 {
 	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
@@ -59,7 +59,7 @@ bool ul_inverse(unit_t *unit)
 	return true;
 }
 
-bool ul_sqrt(unit_t *unit)
+UL_API bool ul_sqrt(unit_t *unit)
 {
 	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
@@ -74,17 +74,17 @@ bool ul_sqrt(unit_t *unit)
 	return false;
 }
 
-void ul_debugging(bool flag)
+UL_API void ul_debugging(bool flag)
 {
 	_ul_debugging = flag;
 }
 
-const char *ul_error(void)
+UL_API const char *ul_error(void)
 {
 	return errmsg;
 }
 
-bool ul_init(void)
+UL_API bool ul_init(void)
 {
 	assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
 
@@ -102,7 +102,7 @@ bool ul_init(void)
 	return true;
 }
 
-void ul_quit(void)
+UL_API void ul_quit(void)
 {
 	_ul_free_rules();
 }

@@ -21,6 +21,7 @@ static rule_t base_rules[NUM_BASE_UNITS];
 
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
+#define MAX_SYM_SIZE 128
 
 // Returns the last rule in the list
 static rule_t *last_rule(void)
@@ -85,14 +86,14 @@ static int parse_item(const char *str, unit_t *unit)
 	debug("Parse item: '%s'", str);
 
 	// Split symbol and exponent
-	char symbol[128];
+	char symbol[MAX_SYM_SIZE];
 	int exp = 1;
 
 	size_t symend = 0;
 	while (str[symend] && str[symend] != '^')
 		symend++;
 
-	if (symend >= 128) {
+	if (symend >= MAX_SYM_SIZE) {
 		ERROR("Symbol to long");
 		return false;
 	}
@@ -118,7 +119,6 @@ static int parse_item(const char *str, unit_t *unit)
 	}
 	debug("Exponent is %d", exp);
 
-
 	// Find the matching rule
 	rule_t *rule = get_rule(symbol);
 	if (!rule) {
@@ -132,7 +132,7 @@ static int parse_item(const char *str, unit_t *unit)
 	return true;
 }
 
-bool ul_parse(const char *str, unit_t *unit)
+UL_API bool ul_parse(const char *str, unit_t *unit)
 {
 	if (!str || !unit) {
 		ERROR("Invalid paramters");
@@ -200,7 +200,7 @@ static bool add_rule(const char *symbol, const unit_t *unit)
 }
 
 // parses a string like "symbol = def"
-bool ul_parse_rule(const char *rule)
+UL_API bool ul_parse_rule(const char *rule)
 {
 	if (!rule) {
 		ERROR("Invalid parameter");
@@ -232,6 +232,11 @@ bool ul_parse_rule(const char *rule)
 	if (symend > splitpos)
 		symend = splitpos;
 
+	if ((symend-skip) > MAX_SYM_SIZE) {
+		ERROR("Symbol to long");
+		return false;
+	}
+
 	debug("Allocate %d bytes", symend-skip + 1);
 	char *symbol = malloc(symend-skip + 1);
 	if (!symbol) {
@@ -261,7 +266,7 @@ bool ul_parse_rule(const char *rule)
 	return add_rule(symbol, &unit);
 }
 
-bool ul_load_rules(const char *path)
+UL_API bool ul_load_rules(const char *path)
 {
 	FILE *f = fopen(path, "r");
 	if (!f) {
@@ -283,7 +288,7 @@ bool ul_load_rules(const char *path)
 	return ok;
 }
 
-void _ul_init_rules(void)
+UL_LINKAGE void _ul_init_rules(void)
 {
 	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
@@ -298,7 +303,7 @@ void _ul_init_rules(void)
 	rules = base_rules;
 }
 
-void _ul_free_rules(void)
+UL_LINKAGE void _ul_free_rules(void)
 {
 	debug("Freeing rule list");
 	rule_t *cur = dynamic_rules;
