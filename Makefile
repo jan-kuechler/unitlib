@@ -13,8 +13,13 @@ TARGET = libunit.a
 DLL = libunit.dll
 IMPLIB = libunit.lib
 
+HEADER = unitlib.h
+
 SRCFILES = unitlib.c parser.c format.c
 HDRFILES = unitlib.h intern.h
+
+LIB_INSTALL = /g/Programmieren/lib
+HDR_INSTALL = /g/Programmieren/include
 
 OBJFILES = unitlib.o parser.o format.o
 
@@ -26,6 +31,11 @@ SMASHPROG = _smash.exe
 all: $(TARGET)
 
 dll: $(DLL)
+
+install-dll: dll
+	cp $(DLL) $(LIB_INSTALL)
+	cp $(IMPLIB) $(LIB_INSTALL)
+	cp $(HEADER) $(HDR_INSTALL)
 
 test: $(TESTPROG)
 	@./$(TESTPROG)
