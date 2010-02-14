@@ -43,7 +43,7 @@ static inline void add_unit(unit_t *to, const unit_t *other, int times)
 	for (; i < NUM_BASE_UNITS; ++i) {
 		to->exps[i] += (times * other->exps[i]);
 	}
-	to->factor *= (times * other->factor);
+	to->factor *= _pown(other->factor, times);
 }
 
 static inline int ncmp(ul_number a, ul_number b)

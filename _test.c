@@ -13,12 +13,12 @@ int main(void)
 		printf("init failed");
 	}
 
-	if (!ul_parse_rule("   N=  kg m s^-2  ")) {
+	if (!ul_parse_rule("   N= 1 kg m s^-2  ")) {
 		printf("Error: %s\n", ul_error());
 	}
 
 	unit_t unit;
-	if (!ul_parse("N^2 m^-1", &unit)) {
+	if (!ul_parse("5.2 N^2 * 9.81 m^-1", &unit)) {
 		printf("Error: %s\n", ul_error());
 	}
 

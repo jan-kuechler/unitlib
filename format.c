@@ -221,6 +221,7 @@ static bool p_latex_inline(struct status *stat)
 
 static bool _print(struct status *stat)
 {
+	debug("ignoring a factor of "N_FMT, stat->unit->factor);
 	switch (stat->format) {
 	case UL_FMT_PLAIN:
 		return p_plain(stat);

@@ -63,9 +63,31 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
+static bool try_parse_factor(const char *str, unit_t *unit)
+{
+	char *endptr;
+	ul_number f = _strton(str, &endptr);
+	if (endptr && *endptr) {
+		debug("'%s' is not a factor", str);
+		return false;
+	}
+	unit->factor *= f;
+	return true;
+}
+
 static bool parse_item(const char *str, unit_t *unit)
 {
 	debug("Parse item: '%s'", str);
+
+	if (strcmp(str, "*") == 0) {
+		debug("Ignoring *");
+		return true;
+	}
+
+	if (try_parse_factor(str, unit)) {
+		debug("Item was a factor, done.");
+		return true;
+	}
 
 	// Split symbol and exponent
 	char symbol[MAX_SYM_SIZE];
