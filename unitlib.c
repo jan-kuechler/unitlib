@@ -22,7 +22,7 @@ UL_LINKAGE void _ul_debug(const char *fmt, ...)
 }
 
 const char *_ul_symbols[] = {
-	"m", "kg", "s", "A", "K", "mol", "C", "L",
+	"m", "kg", "s", "A", "K", "mol", "Cd", "L",
 };
 
 // The last error message
