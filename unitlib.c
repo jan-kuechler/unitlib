@@ -10,12 +10,14 @@
 
 #define sizeofarray(ar) (sizeof((ar))/sizeof((ar)[0]))
 
+static FILE *dbg_out = NULL;
 bool _ul_debugging = false;
 UL_LINKAGE void _ul_debug(const char *fmt, ...)
 {
+	assert(dbg_out);
 	va_list ap;
 	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
+	vfprintf(dbg_out, fmt, ap);
 	va_end(ap);
 }
 
@@ -79,6 +81,11 @@ UL_API void ul_debugging(bool flag)
 	_ul_debugging = flag;
 }
 
+UL_API void ul_debugout(FILE *out)
+{
+	dbg_out = out ? out : stderr;
+}
+
 UL_API const char *ul_error(void)
 {
 	return errmsg;
@@ -88,6 +95,9 @@ UL_API bool ul_init(void)
 {
 	assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
 
+	if (!dbg_out)
+		ul_debugout(stderr);
+
 	debug("Initializing base rules");
 	_ul_init_rules();
 
@@ -95,7 +105,8 @@ UL_API bool ul_init(void)
 	if (rulePath) {
 		debug("UL_RULES is set: %s", rulePath);
 		if (!ul_load_rules(rulePath)) {
-			debug("Failed to load rules: %s", errmsg);
+			ERROR("Failed to load rules: %s", errmsg);
+			return false;
 		}
 	}
 

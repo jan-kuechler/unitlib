@@ -80,6 +80,12 @@ UL_API void ul_quit(void);
 UL_API void ul_debugging(bool flag);
 
 /**
+ * Sets the debug output stream
+ * @param out The outstream
+ */
+UL_API void ul_debugout(FILE *out);
+
+/**
  * Returns the last error message
  * @return The last error message
  */
