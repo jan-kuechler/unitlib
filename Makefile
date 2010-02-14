@@ -26,6 +26,8 @@ OBJFILES = unitlib.o parser.o format.o
 TESTPROG = _test.exe
 SMASHPROG = _smash.exe
 
+UNITTEST = ultest
+
 .PHONY: test clean allclean
 
 all: $(TARGET)
@@ -39,6 +41,9 @@ install-dll: dll
 
 test: $(TESTPROG)
 	@./$(TESTPROG)
+	
+utest: $(UNITTEST)
+	@./$(UNITTEST)
 	
 smash: $(SMASHPROG)
 	@./$(SMASHPROG)
@@ -64,6 +69,9 @@ $(TESTPROG): $(TARGET) _test.c
 	
 $(SMASHPROG): $(TARGET) _test.c
 	@$(CC) -o $(SMASHPROG) -L. -DSMASH _test.c -lunit
+	
+$(UNITTEST): $(TARGET) unittest.c
+	@$(CC) -o $(UNITTEST) -L. unittest.c -lunit
 	
 clean:
 	@rm -f $(OBJFILES)
