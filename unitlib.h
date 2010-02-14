@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "config.h"
+
 #define UL_NAME      "unitlib"
 #define UL_VERSION   "0.2b2"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
@@ -57,6 +59,7 @@ typedef struct ul_format_ops
 typedef struct unit
 {
 	int exps[NUM_BASE_UNITS];
+	ul_number factor;
 } unit_t;
 
 /**

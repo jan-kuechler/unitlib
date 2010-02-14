@@ -47,24 +47,6 @@ static rule_t *get_rule(const char *sym)
 	return NULL;
 }
 
-static void init_unit(unit_t *unit)
-{
-	memset(unit, 0, sizeof(*unit));
-}
-
-static void copy_unit(const unit_t *src, unit_t *dst)
-{
-	memcpy(dst, src, sizeof(*dst));
-}
-
-static void add_unit(unit_t *to, const unit_t *other, int times)
-{
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
-		to->exps[i] += (times * other->exps[i]);
-	}
-}
-
 static size_t skipspace(const char *text, size_t start)
 {
 	size_t i = start;

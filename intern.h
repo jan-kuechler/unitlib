@@ -1,6 +1,8 @@
 #ifndef UL_INTERN_H
 #define UL_INTERN_H
 
+#include <float.h>
+#include <math.h>
 #include "unitlib.h"
 
 extern const char *_ul_symbols[];
@@ -20,5 +22,37 @@ UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...);
 
 UL_LINKAGE void _ul_init_rules(void);
 UL_LINKAGE void _ul_free_rules(void);
+
+#define EXPS_SIZE(unit) (sizeof((unit)->exps[0]) * NUM_BASE_UNITS)
+
+static inline void init_unit(unit_t *unit)
+{
+	memset(unit->exps, 0, EXPS_SIZE(unit));
+	unit->factor = 1.0;
+}
+
+static inline void copy_unit(const unit_t *src, unit_t *dst)
+{
+	memcpy(dst->exps, src->exps, EXPS_SIZE(dst));
+	dst->factor = src->factor;
+}
+
+static inline void add_unit(unit_t *to, const unit_t *other, int times)
+{
+	int i=0;
+	for (; i < NUM_BASE_UNITS; ++i) {
+		to->exps[i] += (times * other->exps[i]);
+	}
+	to->factor *= (times * other->factor);
+}
+
+static inline int ncmp(ul_number a, ul_number b)
+{
+	if (_fabsn(a-b) < N_EPSILON)
+		return 0;
+	if (a < b)
+		return -1;
+	return 1;
+}
 
 #endif /*UL_INTERN_H*/

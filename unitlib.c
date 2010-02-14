@@ -38,14 +38,6 @@ UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...)
 	va_end(ap);
 }
 
-static void add_unit(unit_t *to, const unit_t *other, int times)
-{
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
-		to->exps[i] += (times * other->exps[i]);
-	}
-}
-
 UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 {
 	add_unit(unit, with, 1);
@@ -54,10 +46,17 @@ UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 
 UL_API bool ul_inverse(unit_t *unit)
 {
+	if (ncmp(unit->factor, 0.0) == 0) {
+		ERROR("Cannot inverse 0.0");
+		return false;
+	}
+
 	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
 		unit->exps[i] = -unit->exps[i];
 	}
+
+	unit->factor = 1/unit->factor;
 	return true;
 }
 
@@ -73,6 +72,7 @@ UL_API bool ul_sqrt(unit_t *unit)
 	for (; i < NUM_BASE_UNITS; ++i) {
 		unit->exps[i] /= 2;
 	}
+	unit->factor = _sqrtn(unit->factor);
 	return false;
 }
 
