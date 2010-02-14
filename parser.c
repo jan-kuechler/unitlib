@@ -236,6 +236,10 @@ UL_API bool ul_parse_rule(const char *rule)
 		ERROR("Symbol to long");
 		return false;
 	}
+	if ((symend-skip) == 0) {
+		ERROR("Empty symbols are not allowed.");
+		return false;
+	}
 
 	debug("Allocate %d bytes", symend-skip + 1);
 	char *symbol = malloc(symend-skip + 1);
