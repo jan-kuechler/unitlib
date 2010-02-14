@@ -81,7 +81,7 @@ UL_API void ul_debugging(bool flag)
 	_ul_debugging = flag;
 }
 
-UL_API void ul_debugout(const char *path)
+UL_API void ul_debugout(const char *path, bool append)
 {
 	if (dbg_out && dbg_out != stderr) {
 		debug("New debug file: %s", path ? path : "stderr");
@@ -91,7 +91,7 @@ UL_API void ul_debugout(const char *path)
 		dbg_out = stderr;
 	}
 	else {
-		dbg_out = fopen(path, "a");
+		dbg_out = fopen(path,  append ? "a" : "w");
 		if (!dbg_out) {
 			dbg_out = stderr;
 			debug("Failed to open '%s' as debugout, using stderr.", path);
@@ -132,4 +132,3 @@ UL_API void ul_quit(void)
 	if (dbg_out && dbg_out != stderr)
 		fclose(dbg_out);
 }
-
