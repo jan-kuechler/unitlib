@@ -68,6 +68,10 @@ $(SMASHPROG): $(TARGET) _test.c
 clean:
 	@rm -f $(OBJFILES)
 	@rm -f $(TESTPROG)
+	@rm -f $(SMASHPROG)
+	@rm -f debug.log
 	
 allclean: clean
 	@rm -f $(TARGET)
+	@rm -f $(DLL)
+	@rm -f $(IMPLIB)
