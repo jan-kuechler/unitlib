@@ -83,7 +83,7 @@ UL_API void ul_debugging(bool flag);
  * Sets the debug output stream
  * @param out The outstream
  */
-UL_API void ul_debugout(FILE *out);
+UL_API void ul_debugout(const char *path);
 
 /**
  * Returns the last error message

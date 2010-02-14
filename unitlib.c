@@ -81,9 +81,22 @@ UL_API void ul_debugging(bool flag)
 	_ul_debugging = flag;
 }
 
-UL_API void ul_debugout(FILE *out)
+UL_API void ul_debugout(const char *path)
 {
-	dbg_out = out ? out : stderr;
+	if (dbg_out && dbg_out != stderr) {
+		debug("New debug file: %s", path ? path : "stderr");
+		fclose(dbg_out);
+	}
+	if (!path) {
+		dbg_out = stderr;
+	}
+	else {
+		dbg_out = fopen(path, "a");
+		if (!dbg_out) {
+			dbg_out = stderr;
+			debug("Failed to open '%s' as debugout, using stderr.", path);
+		}
+	}
 }
 
 UL_API const char *ul_error(void)
@@ -95,8 +108,8 @@ UL_API bool ul_init(void)
 {
 	assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
 
-	if (!dbg_out)
-		ul_debugout(stderr);
+	if(!dbg_out)
+		dbg_out = stderr;
 
 	debug("Initializing base rules");
 	_ul_init_rules();
@@ -116,5 +129,7 @@ UL_API bool ul_init(void)
 UL_API void ul_quit(void)
 {
 	_ul_free_rules();
+	if (dbg_out && dbg_out != stderr)
+		fclose(dbg_out);
 }
 

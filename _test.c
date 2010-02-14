@@ -8,6 +8,7 @@ int main(void)
 	printf("Testing %s\n", UL_FULL_NAME);
 
 	ul_debugging(true);
+	ul_debugout("debug.log");
 	if (!ul_init()) {
 		printf("init failed");
 	}
