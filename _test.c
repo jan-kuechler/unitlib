@@ -130,6 +130,13 @@ int main(void)
 		smashit(test, true);
 	}
 
+	{
+		char test[] = "kg^2!";
+		printf("test: ");
+		ul_debugging(true);
+		smashit(test, false);
+	}
+
 	return 0;
 }
 

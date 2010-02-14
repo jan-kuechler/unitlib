@@ -81,7 +81,7 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
-static int parse_item(const char *str, unit_t *unit)
+static bool parse_item(const char *str, unit_t *unit)
 {
 	debug("Parse item: '%s'", str);
 
@@ -104,17 +104,17 @@ static int parse_item(const char *str, unit_t *unit)
 		// The '^' should not be the last value of the string
 		if (!str[symend+1]) {
 			ERROR("Missing exponent after '^' while parsing '%s'", str);
-			return -1;
+			return false;
 		}
 
 		// Parse the exponent
 		char *endptr = NULL;
 		exp = strtol(str+symend+1, &endptr, 10);
 
- 		// the whole exp string was valid only if *endptr is '\0'
+		// the whole exp string was valid only if *endptr is '\0'
 		if (endptr && *endptr) {
 			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
-			return -1;
+			return false;
 		}
 	}
 	debug("Exponent is %d", exp);
