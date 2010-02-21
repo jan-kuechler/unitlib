@@ -86,4 +86,19 @@ int main(void)
 		}
 	END_TEST
 
+	BEGIN_TEST("Parser VI")
+		// Empty symbols are allowed
+		CHECK(ul_parse_rule("EmptySymbol = "));
+
+		unit_t u;
+		CHECK(ul_parse("EmptySymbol", &u));
+
+		int i=0;
+		for (; i < NUM_BASE_UNITS; ++i) {
+			CHECK(u.exps[i] == 0);
+		}
+		CHECK(ncmp(u.factor, 1.0) == 0);
+
+	END_TEST
+
 }
