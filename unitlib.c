@@ -38,6 +38,21 @@ UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...)
 	va_end(ap);
 }
 
+UL_API bool ul_equal(const unit_t *a, const unit_t *b)
+{
+	if (!a || !b) {
+		ERROR("Invalid parameters");
+		return false;
+	}
+
+	int i=0;
+	for (; i < NUM_BASE_UNITS; ++i) {
+		if (a->exps[i] != b->exps[i])
+			return false;
+	}
+	return ncmp(a->factor, b->factor) == 0;
+}
+
 UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 {
 	add_unit(unit, with, 1);

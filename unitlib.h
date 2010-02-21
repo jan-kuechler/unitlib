@@ -117,6 +117,14 @@ UL_API bool ul_load_rules(const char *path);
 UL_API bool ul_parse(const char *str, unit_t *unit);
 
 /**
+ * Compares two units
+ * @param a A unit
+ * @param b Another unit
+ * @return true if both units are equal
+ */
+UL_API bool ul_equal(const unit_t *a, const unit_t *b);
+
+/**
  * Multiplies a unit to a unit.
  * @param unit One factor and destination of the operation
  * @param with The other unit
