@@ -22,7 +22,10 @@ static rule_t base_rules[NUM_BASE_UNITS];
 
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
-#define MAX_SYM_SIZE 128
+enum {
+	MAX_SYM_SIZE = 128,
+	MAX_ITEM_SIZE = 1024,
+};
 
 // Returns the last rule in the list
 static rule_t *last_rule(void)
@@ -155,7 +158,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 	size_t len = strlen(str);
 	size_t start = 0;
 	do {
-		char this_item[1024];
+		char this_item[MAX_ITEM_SIZE ];
 
 		// Skip leading whitespaces
 		start = skipspace(str, start);
@@ -166,7 +169,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 			break;
 		}
 		// sanity check
-		if ((end - start) > 1024) {
+		if ((end - start) > MAX_ITEM_SIZE ) {
 			ERROR("Item too long");
 			return false;
 		}
@@ -242,6 +245,52 @@ static bool valid_symbol(const char *sym)
 	return true;
 }
 
+static char *get_symbol(const char *rule, size_t splitpos, bool *force)
+{
+	assert(rule); assert(force);
+	size_t skip   = skipspace(rule, 0);
+	size_t symend = nextspace(rule, skip);
+	if (symend > splitpos)
+		symend = splitpos;
+
+	if (skipspace(rule,symend) != splitpos) {
+		// rule was something like "a b = kg"
+		ERROR("Invalid symbol, whitespaces are not allowed.");
+		return NULL;
+	}
+
+	if ((symend-skip) > MAX_SYM_SIZE) {
+		ERROR("Symbol to long");
+		return NULL;
+	}
+	if ((symend-skip) == 0) {
+		ERROR("Empty symbols are not allowed.");
+		return NULL;
+	}
+
+	if (rule[skip] == '!') {
+		debug("Forced rule.");
+		*force = true;
+		skip++;
+	}
+	else {
+		*force = false;
+	}
+
+	debug("Allocate %d bytes", symend-skip + 1);
+	char *symbol = malloc(symend-skip + 1);
+	if (!symbol) {
+		ERROR("Failed to allocate memory");
+		return NULL;
+	}
+
+	strncpy(symbol, rule + skip, symend-skip);
+	symbol[symend-skip] = '\0';
+	debug("Symbol is '%s'", symbol);
+
+	return symbol;
+}
+
 // parses a string like "symbol = def"
 UL_API bool ul_parse_rule(const char *rule)
 {
@@ -270,42 +319,10 @@ UL_API bool ul_parse_rule(const char *rule)
 	}
 
 	// Get the symbol
-	size_t skip   = skipspace(rule, 0);
-	size_t symend = nextspace(rule, skip);
-	if (symend > splitpos)
-		symend = splitpos;
-
-	if (skipspace(rule,symend) != splitpos) {
-		ERROR("Invalid symbol, whitespaces are not allowed.");
-		return false;
-	}
-
-	if ((symend-skip) > MAX_SYM_SIZE) {
-		ERROR("Symbol to long");
-		return false;
-	}
-	if ((symend-skip) == 0) {
-		ERROR("Empty symbols are not allowed.");
-		return false;
-	}
-
 	bool force = false;
-	if (rule[skip] == '!') {
-		debug("Forced rule.");
-		force = true;
-		skip++;
-	}
-
-	debug("Allocate %d bytes", symend-skip + 1);
-	char *symbol = malloc(symend-skip + 1);
-	if (!symbol) {
-		ERROR("Failed to allocate memory");
+	char *symbol = get_symbol(rule, splitpos, &force);
+	if (!symbol)
 		return false;
-	}
-
-	strncpy(symbol, rule + skip, symend-skip);
-	symbol[symend-skip] = '\0';
-	debug("Symbol is '%s'", symbol);
 
 	if (!valid_symbol(symbol)) {
 		ERROR("Symbol '%s' is invalid.", symbol);
@@ -320,10 +337,13 @@ UL_API bool ul_parse_rule(const char *rule)
 			free(symbol);
 			return false;
 		}
-
+		// remove the old rule, so it cannot be used in the definition
+		// of the new one, so something like "!R = R" is not possible
 		if (force) {
-			if (!rm_rule(old_rule))
+			if (!rm_rule(old_rule)) {
+				free(symbol);
 				return false;
+			}
 		}
 	}
 
