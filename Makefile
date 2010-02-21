@@ -65,7 +65,7 @@ format.o: format.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o format.o -c format.c
 	
 $(TESTPROG): $(TARGET) _test.c
-	@$(CC) -o $(TESTPROG) -L. _test.c -lunit
+	@$(CC) -o $(TESTPROG) -g -L. _test.c -lunit
 	
 $(SMASHPROG): $(TARGET) _test.c
 	@$(CC) -o $(SMASHPROG) -L. -DSMASH _test.c -lunit
@@ -77,6 +77,7 @@ clean:
 	@rm -f $(OBJFILES)
 	@rm -f $(TESTPROG)
 	@rm -f $(SMASHPROG)
+	@rm -f $(UNITTEST)
 	@rm -f debug.log
 	
 allclean: clean

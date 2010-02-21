@@ -59,10 +59,17 @@ static bool _puts(struct status *s, const char *str)
 	return true;
 }
 
-static bool _putn(struct status *stat, int n)
+static bool _putd(struct status *stat, int n)
 {
 	char buffer[1024];
 	snprintf(buffer, 1024, "%d", n);
+	return _puts(stat, buffer);
+}
+
+static bool _putn(struct status *stat, ul_number n)
+{
+	char buffer[1024];
+	snprintf(buffer, 1024, N_FMT, n);
 	return _puts(stat, buffer);
 }
 
@@ -120,7 +127,7 @@ static bool _plain_one(struct status* stat, int unit, int exp, bool *first)
 	// and the exponent
 	if (exp != 1) {
 		CHECK(_putc(stat, '^'));
-		CHECK(_putn(stat, exp));
+		CHECK(_putd(stat, exp));
 	}
 	*first = false;
 	return true;
@@ -128,6 +135,8 @@ static bool _plain_one(struct status* stat, int unit, int exp, bool *first)
 
 static bool p_plain(struct status *stat)
 {
+	CHECK(_putn(stat, stat->unit->factor));
+	CHECK(_putc(stat, ' '));
 	if (stat->fmtp && stat->fmtp->sort) {
 		return print_sorted(stat, _plain_one, NULL);
 	}
@@ -161,7 +170,7 @@ static bool _latex_one(struct status *stat, int unit, int exp, bool *first)
 	if (exp != 1) {
 		CHECK(_putc(stat, '^'));
 		CHECK(_putc(stat, '{'));
-		CHECK(_putn(stat, exp));
+		CHECK(_putd(stat, exp));
 		CHECK(_putc(stat, '}'));
 	}
 	*first = false;
@@ -238,7 +247,7 @@ static bool _print(struct status *stat)
 	}
 }
 
-UL_API bool ul_fprint(FILE *f,  const unit_t *unit, ul_format_t format,
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
                       ul_fmtops_t *fmtp)
 {
 	struct f_info info = {

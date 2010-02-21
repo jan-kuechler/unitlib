@@ -64,7 +64,7 @@ typedef struct unit
 
 /**
  * Initializes the unitlib. Has to be called before any
- * other ul_* function.
+ * other ul_* function (excl. the ul_debug* functions).
  * @return success
  */
 UL_API bool ul_init(void);
