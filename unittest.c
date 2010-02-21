@@ -129,4 +129,32 @@ int main(void)
 		CHECK(ul_parse_rule("")   == false);
 	END_TEST
 
+	BEGIN_TEST("Parser VII")
+		unit_t kg, s;
+
+		CHECK(ul_parse("kg", &kg));
+		CHECK(ul_parse("s", &s));
+
+		unit_t u;
+
+		CHECK(ul_parse_rule("!ForcedRule = kg"));
+		CHECK(ul_parse("ForcedRule", &u));
+		CHECK(ul_equal(&kg, &u));
+
+		CHECK(ul_parse_rule("NewRule = kg"));
+		CHECK(ul_parse("NewRule", &u));
+		CHECK(ul_equal(&kg, &u));
+
+		CHECK(ul_parse_rule("!NewRule = s"));
+		CHECK(ul_parse("NewRule", &u));
+		CHECK(ul_equal(&s, &u));
+
+		CHECK(ul_parse_rule("!NewRule = m") == false);
+		CHECK(ul_parse_rule("!kg = kg") == false);
+
+		CHECK(ul_parse_rule(" Recurse = m"));
+		CHECK(ul_parse_rule("!Recurse = Recurse") == false);
+
+	END_TEST
+
 }

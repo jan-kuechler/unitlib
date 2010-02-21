@@ -11,6 +11,7 @@ typedef struct rule
 {
 	const char *symbol;
 	unit_t unit;
+	bool   force;
 	struct rule *next;
 } rule_t;
 
@@ -179,7 +180,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 	return true;
 }
 
-static bool add_rule(const char *symbol, const unit_t *unit)
+static bool add_rule(const char *symbol, const unit_t *unit, bool force)
 {
 	rule_t *rule = malloc(sizeof(*rule));
 	if (!rule) {
@@ -189,11 +190,7 @@ static bool add_rule(const char *symbol, const unit_t *unit)
 	rule->next = NULL;
 
 	rule->symbol = symbol;
-	if (!rule->symbol) {
-		free(rule);
-		ERROR("Failed to allocate memory");
-		return false;
-	}
+	rule->force  = force;
 
 	copy_unit(unit, &rule->unit);
 
@@ -260,6 +257,13 @@ UL_API bool ul_parse_rule(const char *rule)
 		return false;
 	}
 
+	bool force = false;
+	if (rule[skip] == '!') {
+		debug("Forced rule.");
+		force = true;
+		skip++;
+	}
+
 	debug("Allocate %d bytes", symend-skip + 1);
 	char *symbol = malloc(symend-skip + 1);
 	if (!symbol) {
@@ -277,10 +281,13 @@ UL_API bool ul_parse_rule(const char *rule)
 		return false;
 	}
 
-	if (get_rule(symbol)) {
-		ERROR("You may not redefine '%s'", symbol);
-		free(symbol);
-		return false;
+	rule_t *old_rule = NULL;
+	if ((old_rule = get_rule(symbol)) != NULL) {
+		if (old_rule->force || !force) {
+			ERROR("You may not redefine '%s'", symbol);
+			free(symbol);
+			return false;
+		}
 	}
 
 	rule = rule + splitpos + 1; // ommiting the '='
@@ -292,7 +299,7 @@ UL_API bool ul_parse_rule(const char *rule)
 		return false;
 	}
 
-	return add_rule(symbol, &unit);
+	return add_rule(symbol, &unit, force);
 }
 
 UL_API bool ul_load_rules(const char *path)
@@ -324,6 +331,7 @@ UL_LINKAGE void _ul_init_rules(void)
 		base_rules[i].symbol = _ul_symbols[i];
 
 		init_unit(&base_rules[i].unit);
+		base_rules[i].force = true;
 		base_rules[i].unit.exps[i] = 1;
 
 		base_rules[i].next = &base_rules[i+1];
