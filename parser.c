@@ -200,6 +200,31 @@ static bool add_rule(const char *symbol, const unit_t *unit, bool force)
 	return true;
 }
 
+static bool rm_rule(rule_t *rule)
+{
+	assert(rule);
+	if (rule->force) {
+		ERROR("Cannot remove forced rule");
+		return false;
+	}
+
+	rule_t *cur = dynamic_rules; // base rules cannot be removed
+	rule_t *prev = &base_rules[NUM_BASE_UNITS-1];
+
+	while (cur && cur != rule) {
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (cur != rule) {
+		ERROR("Rule not found.");
+		return false;
+	}
+
+	prev->next = rule->next;
+	return true;
+}
+
 static bool valid_symbol(const char *sym)
 {
 	while (*sym) {
@@ -287,6 +312,11 @@ UL_API bool ul_parse_rule(const char *rule)
 			ERROR("You may not redefine '%s'", symbol);
 			free(symbol);
 			return false;
+		}
+
+		if (force) {
+			if (!rm_rule(old_rule))
+				return false;
 		}
 	}
 
