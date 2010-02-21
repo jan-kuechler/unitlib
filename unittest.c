@@ -44,26 +44,35 @@ int main(void)
 
 	BEGIN_TEST("Parser II")
 		unit_t u;
+
 		CHECK(ul_parse("	\n kg^2 * m  ", &u));
 		CHECK(u.exps[U_KILOGRAM] == 2);
 		CHECK(u.exps[U_METER] == 1);
 		CHECK(u.exps[U_SECOND] == 0);
 		CHECK(ncmp(u.factor, 1.0) == 0);
-	END_TEST
 
-	BEGIN_TEST("Parser III")
-		unit_t u;
 		CHECK(ul_parse("2 Cd 7 s^-1", &u));
 		CHECK(u.exps[U_CANDELA] == 1);
 		CHECK(u.exps[U_SECOND] == -1);
 		CHECK(ncmp(u.factor, 14.0) == 0);
+
+		CHECK(ul_parse("", &u));
+		int i=0;
+		for (; i < NUM_BASE_UNITS; ++i) {
+			CHECK(u.exps[i] == 0);
+		}
+		CHECK(ncmp(u.factor, 1.0) == 0);
 	END_TEST
 
-	BEGIN_TEST("Parser IV")
+	BEGIN_TEST("Parser II")
 		unit_t u;
 
 		const char *strings[] = {
-			"5*kg^2", "5 ** kg^2", "5! * kg^2", "5 * kg^2!", NULL
+			"5*kg^2",    // need whitespace
+			"5 ** kg^2", // double *
+			"5! * kg^2", // !
+			"5 * kg^2!", // !
+			NULL
 		};
 
 		int i = 0;
@@ -73,20 +82,28 @@ int main(void)
 		}
 	END_TEST
 
-	BEGIN_TEST("Parser V")
+	BEGIN_TEST("Parser IV")
 		const char *strings[] = {
-			" =", "16 = 16", " a b = s ", " c == kg", "d = e", " = kg", NULL,
+			"",          // empty rule
+			" =",        // empty symbol
+			"16 = 16",   // invalid rule
+			" a b = s ", // invalid symbol
+			" c == kg",  // double =
+			"d = e",     // unknown 'e'
+			" = kg",     // empty symbol
+			NULL,
 		};
 
 		int i=0;
 		while (strings[i]) {
 			CHECK(ul_parse_rule(strings[i]) == false);
-			INFO("%s", ul_error());
+			//INFO("%s", ul_error());
 			i++;
 		}
+
 	END_TEST
 
-	BEGIN_TEST("Parser VI")
+	BEGIN_TEST("Parser V")
 		// Empty rules are allowed
 		CHECK(ul_parse_rule("EmptySymbol = "));
 
@@ -99,6 +116,17 @@ int main(void)
 		}
 		CHECK(ncmp(u.factor, 1.0) == 0);
 
+	END_TEST
+
+	BEGIN_TEST("Parser VI")
+		unit_t u;
+
+		CHECK(ul_parse(NULL, NULL) == false);
+		CHECK(ul_parse(NULL, &u)   == false);
+		CHECK(ul_parse("kg", NULL) == false);
+
+		CHECK(ul_parse_rule(NULL) == false);
+		CHECK(ul_parse_rule("")   == false);
 	END_TEST
 
 }

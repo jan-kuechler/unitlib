@@ -17,7 +17,7 @@ typedef long double ul_number;
 #define _sqrtn  sqrtl
 #define _pown   pow
 
-#define N_FMT     "%lG"
+#define N_FMT     "%LG"
 #define N_EPSILON LDBL_EPSILON
 
 #else
@@ -28,7 +28,7 @@ typedef double ul_number;
 #define _sqrtn  sqrt
 #define _pown   powl
 
-#define N_FMT     "%LG"
+#define N_FMT     "%lG"
 #define N_EPSILON DBL_EPSILON
 
 #endif

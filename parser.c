@@ -161,7 +161,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		}
 		// sanity check
 		if ((end - start) > 1024) {
-			ERROR("Item to long");
+			ERROR("Item too long");
 			return false;
 		}
 
