@@ -127,7 +127,7 @@ UL_API bool ul_combine(unit_t *unit, const unit_t *with);
 /**
  * Builds the inverse of a unit
  * @param unit The unit
- * @return success                                                                                                                    * @
+ * @return success
  */
 UL_API bool ul_inverse(unit_t *unit);
 

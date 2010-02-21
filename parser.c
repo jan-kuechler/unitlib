@@ -203,6 +203,16 @@ static bool add_rule(const char *symbol, const unit_t *unit)
 	return true;
 }
 
+static bool valid_symbol(const char *sym)
+{
+	while (*sym) {
+		if (!isalpha(*sym))
+			return false;
+		sym++;
+	}
+	return true;
+}
+
 // parses a string like "symbol = def"
 UL_API bool ul_parse_rule(const char *rule)
 {
@@ -236,6 +246,11 @@ UL_API bool ul_parse_rule(const char *rule)
 	if (symend > splitpos)
 		symend = splitpos;
 
+	if (skipspace(rule,symend) != splitpos) {
+		ERROR("Invalid symbol, whitespaces are not allowed.");
+		return false;
+	}
+
 	if ((symend-skip) > MAX_SYM_SIZE) {
 		ERROR("Symbol to long");
 		return false;
@@ -255,6 +270,12 @@ UL_API bool ul_parse_rule(const char *rule)
 	strncpy(symbol, rule + skip, symend-skip);
 	symbol[symend-skip] = '\0';
 	debug("Symbol is '%s'", symbol);
+
+	if (!valid_symbol(symbol)) {
+		ERROR("Symbol '%s' is invalid.", symbol);
+		free(symbol);
+		return false;
+	}
 
 	if (get_rule(symbol)) {
 		ERROR("You may not redefine '%s'", symbol);

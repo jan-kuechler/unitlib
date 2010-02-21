@@ -14,12 +14,18 @@
 #define CHECK(expr) \
 	do { if (!(expr)) { printf("%s failed.\n", #expr); _fails++; }} while (0)
 
+#define INFO(fmt, ...) \
+	do { printf("* " fmt "\n", ##__VA_ARGS__); } while (0)
+
 int main(void)
 {
 	printf("Unit tests for " UL_FULL_NAME "\n");
 
 	ul_debugging(false);
-	ul_init();
+	if (!ul_init()) {
+		printf("ul_init failed: %s", ul_error());
+		return 1;
+	}
 
 	BEGIN_TEST("Parser I")
 		unit_t u;
@@ -63,6 +69,19 @@ int main(void)
 		int i = 0;
 		while (strings[i]) {
 			CHECK(ul_parse(strings[i], &u) == false);
+			i++;
+		}
+	END_TEST
+
+	BEGIN_TEST("Parser V")
+		const char *strings[] = {
+			" =", "16 = 16", " a b = s ", " c == kg", "d = e", " = kg", NULL,
+		};
+
+		int i=0;
+		while (strings[i]) {
+			CHECK(ul_parse_rule(strings[i]) == false);
+			INFO("%s", ul_error());
 			i++;
 		}
 	END_TEST
