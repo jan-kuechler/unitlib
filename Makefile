@@ -3,7 +3,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -O2
+CFLAGS = -O2 -std=c99 -Wall -Wextra
 
 AR = ar
 RANLIB = ranlib

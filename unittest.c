@@ -87,7 +87,7 @@ int main(void)
 	END_TEST
 
 	BEGIN_TEST("Parser VI")
-		// Empty symbols are allowed
+		// Empty rules are allowed
 		CHECK(ul_parse_rule("EmptySymbol = "));
 
 		unit_t u;

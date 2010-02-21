@@ -68,7 +68,7 @@ static bool _putn(struct status *stat, int n)
 
 static bool print_sorted(struct status *stat, printer_t func, bool *first)
 {
-	bool printed[NUM_BASE_UNITS] = {};
+	bool printed[NUM_BASE_UNITS] = {0};
 	bool _first = true;
 	int i=0;
 

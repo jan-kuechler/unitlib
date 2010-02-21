@@ -227,7 +227,7 @@ UL_API bool ul_parse_rule(const char *rule)
 
 	debug("Parsing rule '%s'", rule);
 
-	int i=0;
+	size_t i=0;
 	for (; i < len; ++i) {
 		if (rule[i] == '=') {
 			debug("Split at %d", i);
