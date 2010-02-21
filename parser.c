@@ -39,6 +39,7 @@ static rule_t *last_rule(void)
 
 static rule_t *get_rule(const char *sym)
 {
+	assert(sym);
 	rule_t *cur = rules;
 	while (cur) {
 		if (strcmp(cur->symbol, sym) == 0)
@@ -50,6 +51,7 @@ static rule_t *get_rule(const char *sym)
 
 static size_t skipspace(const char *text, size_t start)
 {
+	assert(text);
 	size_t i = start;
 	while (text[i] && isspace(text[i]))
 		i++;
@@ -58,6 +60,7 @@ static size_t skipspace(const char *text, size_t start)
 
 static size_t nextspace(const char *text, size_t start)
 {
+	assert(text);
 	size_t i=start;
 	while (text[i] && !isspace(text[i]))
 		i++;
@@ -66,6 +69,7 @@ static size_t nextspace(const char *text, size_t start)
 
 static bool try_parse_factor(const char *str, unit_t *unit)
 {
+	assert(str); assert(unit);
 	char *endptr;
 	ul_number f = _strton(str, &endptr);
 	if (endptr && *endptr) {
@@ -78,6 +82,7 @@ static bool try_parse_factor(const char *str, unit_t *unit)
 
 static bool parse_item(const char *str, unit_t *unit)
 {
+	assert(str); assert(unit);
 	debug("Parse item: '%s'", str);
 
 	if (strcmp(str, "*") == 0) {
@@ -182,6 +187,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 
 static bool add_rule(const char *symbol, const unit_t *unit, bool force)
 {
+	assert(symbol);	assert(unit);
 	rule_t *rule = malloc(sizeof(*rule));
 	if (!rule) {
 		ERROR("Failed to allocate memory");
@@ -227,6 +233,7 @@ static bool rm_rule(rule_t *rule)
 
 static bool valid_symbol(const char *sym)
 {
+	assert(sym);
 	while (*sym) {
 		if (!isalpha(*sym))
 			return false;
