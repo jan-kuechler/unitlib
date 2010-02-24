@@ -18,7 +18,7 @@ int main(void)
 	}
 
 	unit_t unit;
-	if (!ul_parse("2 N^2 * 0.75 m^-1", &unit)) {
+	if (!ul_parse("0.2 N^2 * 0.75 m^-1", &unit)) {
 		printf("Error: %s\n", ul_error());
 	}
 
@@ -30,7 +30,7 @@ int main(void)
 	fmtop.order[2] = U_METER;
 	fmtop.order[3] = U_ANY;
 
-	printf("2 N^2 * 0.75 m^-1 = ");
+	printf("0.2 N^2 * 0.75 m^-1 = ");
 	if (!ul_fprint(stdout, &unit, UL_FMT_PLAIN, &fmtop)) {
 		printf("Error: %s\n", ul_error());
 	}
@@ -55,6 +55,8 @@ int main(void)
 	}
 
 	ul_print( &unit, UL_FMT_LATEX_FRAC, &fmtop);
+	printf("\n");
+	ul_print(&unit, UL_FMT_LATEX_INLINE, NULL);
 	printf("\n");
 
 	{

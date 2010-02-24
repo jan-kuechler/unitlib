@@ -203,6 +203,8 @@ static bool _latex_one(struct status *stat, int unit, int exp, bool *first)
 	if (!*first)
 		CHECK(_putc(stat, ' '));
 	CHECK(_puts(stat, "\\text{"));
+	if (!*first)
+		CHECK(_putc(stat, ' '));
 	CHECK(_puts(stat, _ul_symbols[unit]));
 	CHECK(_puts(stat, "}"));
 	if (exp != 1) {
@@ -221,7 +223,22 @@ static bool p_latex_frac(struct status *stat)
 	bool positive = true;
 	stat->extra = &positive;
 
+	ul_number m; int e;
+	getnexp(stat->unit->factor, &m, &e);
+
 	CHECK(_puts(stat, "\\frac{"));
+
+	if (e >= 0) {
+		CHECK(_putn(stat, m));
+		if (e > 0) {
+			CHECK(_puts(stat, " \\cdot 10^{"));
+			CHECK(_putd(stat, e));
+			CHECK(_putc(stat, '}'));
+		}
+		CHECK(_putc(stat, ' '));
+		first = false;
+	}
+
 	if (stat->fmtp && stat->fmtp->sort) {
 		print_sorted(stat, _latex_one, &first);
 	}
@@ -237,6 +254,19 @@ static bool p_latex_frac(struct status *stat)
 
 	first = true;
 	positive = false;
+
+	if (e < 0) {
+		e = -e;
+		CHECK(_putn(stat, m));
+		if (e > 0) {
+			CHECK(_puts(stat, " \\cdot 10^{"));
+			CHECK(_putd(stat, e));
+			CHECK(_putc(stat, '}'));
+		}
+		CHECK(_putc(stat, ' '));
+		first = false;
+	}
+
 	if (stat->fmtp && stat->fmtp->sort) {
 		print_sorted(stat, _latex_one, &first);
 	}
@@ -253,8 +283,19 @@ static bool p_latex_frac(struct status *stat)
 static bool p_latex_inline(struct status *stat)
 {
 	int i=0;
-	bool first = true;
+	bool first = false;
 	CHECK(_putc(stat, '$'));
+
+	ul_number m; int e;
+	getnexp(stat->unit->factor, &m, &e);
+	CHECK(_putn(stat, m));
+	if (e != 0) {
+		CHECK(_puts(stat, " \\cdot 10^{"));
+		CHECK(_putd(stat, e));
+		CHECK(_putc(stat, '}'));
+	}
+	CHECK(_putc(stat, ' '));
+
 	for (i=0; i < NUM_BASE_UNITS; ++i) {
 		int exp = stat->unit->exps[i];
 		if (exp != 0) {
