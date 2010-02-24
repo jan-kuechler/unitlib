@@ -73,6 +73,44 @@ static bool _putn(struct status *stat, ul_number n)
 	return _puts(stat, buffer);
 }
 
+static void getnexp(ul_number n, ul_number *mantissa, int *exp)
+{
+	bool neg = false;
+	if (n < 0) {
+		neg = true;
+		n = -n;
+	}
+	if ((ncmp(n, 10.0) == -1) && (ncmp(n, 1.0) == 1)) {
+		*mantissa = neg ? -n : n;
+		*exp = 0;
+		return;
+	}
+	else if (ncmp(n, 10.0) > -1) {
+		int e = 0;
+		do {
+			e++;
+			n /= 10;
+		} while (ncmp(n, 10.0) == 1);
+		*exp = e;
+		*mantissa = neg ? -n : n;
+	}
+	else if (ncmp(n, 1.0) < 1) {
+		int e = 0;
+		while (ncmp(n, 1.0) == -1) {
+			e--;
+			n *= 10;
+		}
+		*exp = e;
+		*mantissa = neg ? -n : n;
+	}
+}
+
+// global for testing purpose, it's not declared in the header
+void _ul_getnexp(ul_number n, ul_number *m, int *e)
+{
+	getnexp(n, m, e);
+}
+
 static bool print_sorted(struct status *stat, printer_t func, bool *first)
 {
 	bool printed[NUM_BASE_UNITS] = {0};

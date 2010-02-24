@@ -146,7 +146,55 @@ TEST_SUITE(core)
 END_TEST_SUITE()
 
 TEST_SUITE(format)
+	TEST
+		extern void _ul_getnexp(ul_number n, ul_number *m, int *e);
 
+		ul_number m;
+		int       e;
+
+		_ul_getnexp(1.0, &m, &e);
+		CHECK(ncmp(m, 1.0) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 0);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(-1.0, &m, &e);
+		CHECK(ncmp(m, -1.0) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 0);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(11.0, &m, &e);
+		CHECK(ncmp(m, 1.1) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 1);
+		FAIL_MSG("e == %d", e);;
+
+		_ul_getnexp(9.81, &m, &e);
+		CHECK(ncmp(m, 9.81) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 0);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(-1234, &m, &e);
+		CHECK(ncmp(m, -1.234) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 3);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(10.0, &m, &e);
+		CHECK(ncmp(m, 1.0) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 1);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(0.01, &m, &e);
+		CHECK(ncmp(m, 1.0) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == -2);
+		FAIL_MSG("e == %d", e);
+
+	END_TEST
 END_TEST_SUITE()
 
 int main(void)
@@ -182,11 +230,19 @@ int main(void)
 		if (!(expr)) { \
 			_err++; _fail++; \
 			PRINT(o, L_NORMAL, "[%s-%d-%d] Fail: '%s'\n", _name, _id, _this, #expr); \
+			_last = false;\
 		} \
 		else { \
 			PRINT(o, L_VERBOSE, "[%s-%d-%d] Pass: '%s'\n", _name, _id, _this, #expr); \
+			_last = true; \
 		} \
 	} while (0)
+
+#define FAIL_MSG(msg, ...) \
+	do {if (!_last) PRINT(o,L_NORMAL,msg"\n", ##__VA_ARGS__); } while (0)
+
+#define PASS_MSG(msg, ...) \
+	do {if (_last) PRINT(o,L_VERBOSE,msg"\n", ##__VA_ARGS__); } while (0)
 
 #define INFO(fmt, ...) \
 	do { printf("* " fmt "\n", ##__VA_ARGS__); } while (0)
@@ -203,7 +259,7 @@ int main(void)
 
 // SINGLE TEST
 #define TEST \
-	{ int _id = ++_test_id; int _err = 0; int _cid = 0;
+	{ int _id = ++_test_id; int _err = 0; int _cid = 0; bool _last = true; \
 
 #define END_TEST \
 		if (_err > 0) { \
