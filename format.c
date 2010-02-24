@@ -235,7 +235,6 @@ static bool p_latex_frac(struct status *stat)
 			CHECK(_putd(stat, e));
 			CHECK(_putc(stat, '}'));
 		}
-		CHECK(_putc(stat, ' '));
 		first = false;
 	}
 
@@ -263,7 +262,6 @@ static bool p_latex_frac(struct status *stat)
 			CHECK(_putd(stat, e));
 			CHECK(_putc(stat, '}'));
 		}
-		CHECK(_putc(stat, ' '));
 		first = false;
 	}
 
@@ -294,7 +292,6 @@ static bool p_latex_inline(struct status *stat)
 		CHECK(_putd(stat, e));
 		CHECK(_putc(stat, '}'));
 	}
-	CHECK(_putc(stat, ' '));
 
 	for (i=0; i < NUM_BASE_UNITS; ++i) {
 		int exp = stat->unit->exps[i];
