@@ -1,33 +1,16 @@
+#ifndef GET_TEST_DEFS
 #include <stdlib.h>
 #include <string.h>
 #include "unitlib.h"
 #include "intern.h"
 
-#define BEGIN_TEST(name) \
-	{ printf("------ [ %-20s ]\n", name); const char * _test_name = name; int _fails=0;
+// yay, self include (-:
+#define GET_TEST_DEFS
+#include "unittest.c"
+#undef GET_TEST_DEFS
 
-#define END_TEST \
-	if (_fails) printf(":%d error%s\n", _fails, _fails > 1 ? "s" : ""); \
-	else printf(":Ok\n"); \
-	printf("-------------------------------\n");}
-
-#define CHECK(expr) \
-	do { if (!(expr)) { printf("%s failed.\n", #expr); _fails++; }} while (0)
-
-#define INFO(fmt, ...) \
-	do { printf("* " fmt "\n", ##__VA_ARGS__); } while (0)
-
-int main(void)
-{
-	printf("Unit tests for " UL_FULL_NAME "\n");
-
-	ul_debugging(false);
-	if (!ul_init()) {
-		printf("ul_init failed: %s", ul_error());
-		return 1;
-	}
-
-	BEGIN_TEST("Parser I")
+TEST_SUITE(parser)
+	TEST
 		unit_t u;
 		CHECK(ul_parse("m", &u));
 		CHECK(u.exps[U_METER] == 1);
@@ -42,7 +25,7 @@ int main(void)
 		CHECK(ncmp(u.factor, 1.0) == 0);
 	END_TEST
 
-	BEGIN_TEST("Parser II")
+	TEST
 		unit_t u;
 
 		CHECK(ul_parse("	\n kg^2 * m  ", &u));
@@ -64,7 +47,7 @@ int main(void)
 		CHECK(ncmp(u.factor, 1.0) == 0);
 	END_TEST
 
-	BEGIN_TEST("Parser II")
+	TEST
 		unit_t u;
 
 		const char *strings[] = {
@@ -82,7 +65,7 @@ int main(void)
 		}
 	END_TEST
 
-	BEGIN_TEST("Parser IV")
+	TEST
 		const char *strings[] = {
 			"",          // empty rule
 			" =",        // empty symbol
@@ -103,7 +86,7 @@ int main(void)
 
 	END_TEST
 
-	BEGIN_TEST("Parser V")
+	TEST
 		// Empty rules are allowed
 		CHECK(ul_parse_rule("EmptySymbol = "));
 
@@ -118,7 +101,7 @@ int main(void)
 
 	END_TEST
 
-	BEGIN_TEST("Parser VI")
+	TEST
 		unit_t u;
 
 		CHECK(ul_parse(NULL, NULL) == false);
@@ -129,7 +112,7 @@ int main(void)
 		CHECK(ul_parse_rule("")   == false);
 	END_TEST
 
-	BEGIN_TEST("Parser VII")
+	TEST
 		unit_t kg, s;
 
 		CHECK(ul_parse("kg", &kg));
@@ -156,5 +139,118 @@ int main(void)
 		CHECK(ul_parse_rule("!Recurse = Recurse") == false);
 
 	END_TEST
+END_TEST_SUITE()
 
+TEST_SUITE(core)
+
+END_TEST_SUITE()
+
+TEST_SUITE(format)
+
+END_TEST_SUITE()
+
+int main(void)
+{
+	ul_debugging(false);
+	if (!ul_init()) {
+		printf("ul_init failed: %s", ul_error());
+		return 1;
+	}
+
+	INIT_TEST();
+	SET_LOGLVL(L_NORMAL);
+
+	RUN_SUITE(core);
+	RUN_SUITE(parser);
+	RUN_SUITE(format);
+
+	ul_quit();
+
+	return TEST_RESULT;
 }
+
+#endif /*ndef GET_TEST_DEFS*/
+
+//#################################################################################################
+
+#ifdef GET_TEST_DEFS
+#define PRINT(o, lvl, ...) do { if ((o)->loglvl >= lvl) printf(__VA_ARGS__); } while (0)
+
+#define CHECK(expr) \
+	do { \
+	  int _this = ++_cid; \
+		if (!(expr)) { \
+			_err++; _fail++; \
+			PRINT(o, L_NORMAL, "[%s-%d-%d] Fail: '%s'\n", _name, _id, _this, #expr); \
+		} \
+		else { \
+			PRINT(o, L_VERBOSE, "[%s-%d-%d] Pass: '%s'\n", _name, _id, _this, #expr); \
+		} \
+	} while (0)
+
+#define INFO(fmt, ...) \
+	do { printf("* " fmt "\n", ##__VA_ARGS__); } while (0)
+
+// TEST SUITE
+#define TEST_SUITE(name)       \
+	int _test_##name(_tops *o) { \
+		const char *_name = #name; \
+		int _fail = 0;             \
+		int _test_id = 0;          \
+
+#define END_TEST_SUITE() \
+	return _fail; }
+
+// SINGLE TEST
+#define TEST \
+	{ int _id = ++_test_id; int _err = 0; int _cid = 0;
+
+#define END_TEST \
+		if (_err > 0) { \
+			PRINT(o, L_NORMAL, "[%s-%d] failed with %d error%s.\n", _name, _id, _err, _err > 1 ? "s" : ""); \
+		} \
+		else { \
+			PRINT(o, L_NORMAL, "[%s-%d] passed.\n", _name, _id); \
+		} \
+	}
+
+// OTHER
+typedef struct
+{
+	int loglvl;
+} _tops;
+
+enum
+{
+	L_QUIET   = 0,
+	L_RESULT  = 1,
+	L_NORMAL  = 2,
+	L_VERBOSE = 3,
+	L_ALL     = 4,
+};
+
+static inline int _run_suite(int (*suite)(_tops*), const char *name, _tops *o)
+{
+	int num_errs = suite(o);
+
+	if (num_errs == 0) {
+		PRINT(o, L_RESULT, "[%s] passed.\n", name);
+	}
+	else {
+		PRINT(o, L_RESULT, "[%s] failed with %d error%s.\n", name, num_errs, num_errs > 1 ? "s" : "");
+	}
+	return num_errs;
+}
+
+#define INIT_TEST() \
+	_tops _ops; int _tres = 0;
+
+#define SET_LOGLVL(lvl) \
+	_ops.loglvl = (lvl);
+
+#define RUN_SUITE(name) \
+	_tres += _run_suite(_test_##name, #name, &_ops)
+
+#define TEST_RESULT _tres
+
+#endif /* GET_TEST_DEFS*/
