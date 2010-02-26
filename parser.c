@@ -75,9 +75,10 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
-static bool try_parse_factor(const char *str, unit_t *unit)
+static bool try_parse_factor(const char *str, unit_t *unit,
+                             struct parser_state *state)
 {
-	assert(str); assert(unit);
+	assert(str); assert(unit); assert(state);
 	char *endptr;
 	ul_number f = _strton(str, &endptr);
 	if (endptr && *endptr) {
@@ -90,6 +91,7 @@ static bool try_parse_factor(const char *str, unit_t *unit)
 
 static bool is_special(const char *str)
 {
+	assert(str);
 	if (strlen(str) == 1) {
 		switch (str[0]) {
 		case '*':
@@ -103,6 +105,7 @@ static bool is_special(const char *str)
 
 static bool handle_special(const char *str, struct parser_state *state)
 {
+	assert(str); assert(state);
 	switch (str[0]) {
 	case '*':
 		// ignore
@@ -118,13 +121,8 @@ static bool handle_special(const char *str, struct parser_state *state)
 
 static bool parse_item(const char *str, unit_t *unit, struct parser_state *state)
 {
-	assert(str); assert(unit);
+	assert(str); assert(unit); assert(state);
 	debug("Parse item: '%s'", str);
-
-	if (try_parse_factor(str, unit)) {
-		debug("Item was a factor, done.");
-		return true;
-	}
 
 	// Split symbol and exponent
 	char symbol[MAX_SYM_SIZE];
@@ -212,6 +210,9 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		if (is_special(this_item)) {
 			if (!handle_special(this_item, &state))
 				return false;
+		}
+		else if (try_parse_factor(this_item, unit, &state)) {
+			// nothing todo
 		}
 		else {
 			// and parse it
