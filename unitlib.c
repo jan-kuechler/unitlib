@@ -8,6 +8,7 @@
 #include "intern.h"
 #include "unitlib.h"
 
+#define static_assert(e) extern char (*STATIC_ASSERT(void))[sizeof(char[1 - 2*!(e)])]
 #define sizeofarray(ar) (sizeof((ar))/sizeof((ar)[0]))
 
 static FILE *dbg_out = NULL;
@@ -24,6 +25,7 @@ UL_LINKAGE void _ul_debug(const char *fmt, ...)
 const char *_ul_symbols[] = {
 	"m", "kg", "s", "A", "K", "mol", "Cd", "L",
 };
+static_assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
 
 // The last error message
 static char errmsg[1024];
@@ -121,8 +123,6 @@ UL_API const char *ul_error(void)
 
 UL_API bool ul_init(void)
 {
-	assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
-
 	if(!dbg_out)
 		dbg_out = stderr;
 
