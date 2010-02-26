@@ -52,6 +52,7 @@ TEST_SUITE(parser)
 		unit_t u;
 
 		CHECK(ul_parse("	\n kg^2 * m  ", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(u.exps[U_KILOGRAM] == 2);
 		CHECK(u.exps[U_METER] == 1);
 		CHECK(u.exps[U_SECOND] == 0);
