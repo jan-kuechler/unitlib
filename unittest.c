@@ -36,6 +36,7 @@ TEST_SUITE(parser)
 	TEST
 		unit_t u;
 		CHECK(ul_parse("m", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(u.exps[U_METER] == 1);
 
 		int i=0;
@@ -52,12 +53,14 @@ TEST_SUITE(parser)
 		unit_t u;
 
 		CHECK(ul_parse("	\n kg^2 * m  ", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(u.exps[U_KILOGRAM] == 2);
 		CHECK(u.exps[U_METER] == 1);
 		CHECK(u.exps[U_SECOND] == 0);
 		CHECK(ncmp(u.factor, 1.0) == 0);
 
 		CHECK(ul_parse("2 Cd 7 s^-1", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(u.exps[U_CANDELA] == 1);
 		CHECK(u.exps[U_SECOND] == -1);
 		CHECK(ncmp(u.factor, 14.0) == 0);
@@ -114,9 +117,11 @@ TEST_SUITE(parser)
 	TEST
 		// Empty rules are allowed
 		CHECK(ul_parse_rule("EmptySymbol = "));
+		FAIL_MSG("Error: %s", ul_error());
 
 		unit_t u;
 		CHECK(ul_parse("EmptySymbol", &u));
+		FAIL_MSG("Error: %s", ul_error());
 
 		int i=0;
 		for (; i < NUM_BASE_UNITS; ++i) {
@@ -143,14 +148,19 @@ TEST_SUITE(parser)
 		unit_t u;
 
 		CHECK(ul_parse_rule("!ForcedRule = kg"));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_parse("ForcedRule", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_equal(&kg, &u));
 
 		CHECK(ul_parse_rule("NewRule = kg"));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_parse("NewRule", &u));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_equal(&kg, &u));
 
 		CHECK(ul_parse_rule("!NewRule = s"));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_parse("NewRule", &u));
 		CHECK(ul_equal(&s, &u));
 
@@ -158,6 +168,7 @@ TEST_SUITE(parser)
 		CHECK(ul_parse_rule("!kg = kg") == false);
 
 		CHECK(ul_parse_rule(" Recurse = m"));
+		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_parse_rule("!Recurse = Recurse") == false);
 	END_TEST
 END_TEST_SUITE()
