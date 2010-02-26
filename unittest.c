@@ -190,7 +190,35 @@ TEST_SUITE(core)
 
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 		CHECK(!ul_equal(&kg, &N));
+	END_TEST
 
+	TEST
+		unit_t a = MAKE_UNIT(1.0, U_KILOGRAM, 1);
+		unit_t b;
+
+		CHECK(ul_copy(&b, &a));
+		FAIL_MSG("Error: %s", ul_error());
+
+		CHECK(ul_equal(&b, &a));
+
+		CHECK(!ul_copy(NULL, NULL));
+		CHECK(!ul_copy(&a, NULL));
+		CHECK(!ul_copy(NULL, &a));
+	END_TEST
+
+	TEST
+		unit_t a = MAKE_UNIT(2.0, U_KILOGRAM, 1);
+		unit_t b = MAKE_UNIT(3.0, U_SECOND, -2);
+
+		unit_t res;
+		CHECK(ul_copy(&res, &a));
+		FAIL_MSG("Preparation failed: %s", ul_error());
+
+		CHECK(ul_combine(&res, &b));
+		FAIL_MSG("Error: %s", ul_error());
+
+		unit_t correct = MAKE_UNIT(6.0, U_KILOGRAM, 1, U_SECOND, -2);
+		CHECK(ul_equal(&res, &correct));
 	END_TEST
 END_TEST_SUITE()
 

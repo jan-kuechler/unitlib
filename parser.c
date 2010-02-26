@@ -207,6 +207,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		strncpy(this_item, str+start, end-start);
 		this_item[end-start] = '\0';
 
+		// and parse it
 		if (is_special(this_item)) {
 			if (!handle_special(this_item, &state))
 				return false;
@@ -215,7 +216,6 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 			// nothing todo
 		}
 		else {
-			// and parse it
 			if (!parse_item(this_item, unit, &state))
 				return false;
 		}

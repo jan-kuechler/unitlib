@@ -57,6 +57,10 @@ UL_API bool ul_equal(const unit_t *a, const unit_t *b)
 
 UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 {
+	if (!unit || !with) {
+		ERROR("Invalid parameter");
+		return false;
+	}
 	add_unit(unit, with, 1);
 	return true;
 }
@@ -73,6 +77,10 @@ UL_API bool ul_copy(unit_t *dst, const unit_t *src)
 
 UL_API bool ul_inverse(unit_t *unit)
 {
+	if (!unit) {
+		ERROR("Invalid parameter");
+		return false;
+	}
 	if (ncmp(unit->factor, 0.0) == 0) {
 		ERROR("Cannot inverse 0.0");
 		return false;
@@ -89,6 +97,10 @@ UL_API bool ul_inverse(unit_t *unit)
 
 UL_API bool ul_sqrt(unit_t *unit)
 {
+	if (!unit) {
+		ERROR("Invalid parameter");
+		return false;
+	}
 	int i=0;
 	for (; i < NUM_BASE_UNITS; ++i) {
 		if ((unit->exps[i] % 2) != 0) {
