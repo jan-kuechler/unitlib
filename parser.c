@@ -22,6 +22,11 @@ static rule_t base_rules[NUM_BASE_UNITS];
 
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
+struct parser_state
+{
+	int sign;
+};
+
 enum {
 	MAX_SYM_SIZE = 128,
 	MAX_ITEM_SIZE = 1024,
@@ -83,15 +88,38 @@ static bool try_parse_factor(const char *str, unit_t *unit)
 	return true;
 }
 
-static bool parse_item(const char *str, unit_t *unit)
+static bool is_special(const char *str)
+{
+	if (strlen(str) == 1) {
+		switch (str[0]) {
+		case '*':
+			return true;
+		case '/':
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool handle_special(const char *str, struct parser_state *state)
+{
+	switch (str[0]) {
+	case '*':
+		// ignore
+		return true;
+
+	case '/':
+		state->sign *= -1;
+		return true;
+	}
+	ERROR("Internal error: is_special/handle_special missmatch for '%s'.", str);
+	return false;
+}
+
+static bool parse_item(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit);
 	debug("Parse item: '%s'", str);
-
-	if (strcmp(str, "*") == 0) {
-		debug("Ignoring *");
-		return true;
-	}
 
 	if (try_parse_factor(str, unit)) {
 		debug("Item was a factor, done.");
@@ -140,7 +168,7 @@ static bool parse_item(const char *str, unit_t *unit)
 	}
 
 	// And add the definitions
-	add_unit(unit, &rule->unit, exp);
+	add_unit(unit, &rule->unit, state->sign * exp);
 
 	return true;
 }
@@ -152,6 +180,9 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		return false;
 	}
 	debug("Parse unit: '%s'", str);
+
+	struct parser_state state;
+	state.sign = 1;
 
 	init_unit(unit);
 
@@ -178,9 +209,15 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		strncpy(this_item, str+start, end-start);
 		this_item[end-start] = '\0';
 
-		// and parse it
-		if (!parse_item(this_item, unit))
-			return false;
+		if (is_special(this_item)) {
+			if (!handle_special(this_item, &state))
+				return false;
+		}
+		else {
+			// and parse it
+			if (!parse_item(this_item, unit, &state))
+				return false;
+		}
 
 		start = end + 1;
 	} while (start < len);
