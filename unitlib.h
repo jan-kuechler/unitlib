@@ -125,6 +125,14 @@ UL_API bool ul_parse(const char *str, unit_t *unit);
 UL_API bool ul_equal(const unit_t *a, const unit_t *b);
 
 /**
+ * Copies a unit into another
+ * @param dst Destination unit
+ * @param src Source unit
+ * @return success
+ */
+UL_API bool ul_copy(unit_t *dst, const unit_t *src);
+
+/**
  * Multiplies a unit to a unit.
  * @param unit One factor and destination of the operation
  * @param with The other unit

@@ -61,6 +61,16 @@ UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 	return true;
 }
 
+UL_API bool ul_copy(unit_t *dst, const unit_t *src)
+{
+	if (!dst || !src) {
+		ERROR("Invalid parameter");
+		return false;
+	}
+	copy_unit(src, dst);
+	return true;
+}
+
 UL_API bool ul_inverse(unit_t *unit)
 {
 	if (ncmp(unit->factor, 0.0) == 0) {
