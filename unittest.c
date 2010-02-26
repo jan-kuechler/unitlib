@@ -231,6 +231,18 @@ TEST_SUITE(format)
 		FAIL_MSG("m == %g", m);
 		CHECK(e == -2);
 		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(0.99, &m, &e);
+		CHECK(ncmp(m, 9.9) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == -1);
+		FAIL_MSG("e == %d", e);
+
+		_ul_getnexp(10.01, &m, &e);
+		CHECK(ncmp(m, 1.001) == 0);
+		FAIL_MSG("m == %g", m);
+		CHECK(e == 1);
+		FAIL_MSG("e == %d", e);
 	END_TEST
 
 	TEST
