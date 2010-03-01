@@ -162,8 +162,7 @@ UL_API bool ul_sqrt(unit_t *unit);
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
-                      ul_fmtops_t *fmtp);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
 
 /**
  * Prints the unit to stdout according to the format
@@ -172,8 +171,7 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format,
-                            ul_fmtops_t *fmtp)
+static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
 {
 	return ul_fprint(stdout, unit, format, fmtp);
 }
@@ -187,7 +185,6 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
-                       ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
 
 #endif /*UNITLIB_H*/
