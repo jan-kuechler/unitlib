@@ -50,6 +50,14 @@ typedef enum ul_format
 	UL_FMT_LATEX_INLINE,
 } ul_format_t;
 
+typedef enum ul_cmpres
+{
+	UL_ERROR       = 0x00,
+	UL_SAME_UNIT   = 0x01,
+	UL_SAME_FACTOR = 0x02,
+	UL_EQUAL       = 0x03,
+} ul_cmpres_t;
+
 typedef struct ul_format_ops
 {
 	bool sort;
@@ -117,12 +125,35 @@ UL_API bool ul_load_rules(const char *path);
 UL_API bool ul_parse(const char *str, unit_t *unit);
 
 /**
+ * Returns the factor of a unit
+ * @param unit The unit
+ * @return The factor
+ */
+static inline ul_number ul_factor(const unit_t *unit)
+{
+	if (!unit)
+		return 0.0;
+	return unit->factor;
+}
+
+/**
+ * Compares two units
+ * @param a A unit
+ * @param b Another unit
+ * @return Compare result
+ */
+UL_API ul_cmpres_t ul_cmp(const unit_t *a, const unit_t *b);
+
+/**
  * Compares two units
  * @param a A unit
  * @param b Another unit
  * @return true if both units are equal
  */
-UL_API bool ul_equal(const unit_t *a, const unit_t *b);
+static inline bool ul_equal(const unit_t *a, const unit_t *b)
+{
+	return ul_cmp(a, b) == UL_EQUAL;
+}
 
 /**
  * Copies a unit into another

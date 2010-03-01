@@ -40,18 +40,24 @@ UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...)
 	va_end(ap);
 }
 
-UL_API bool ul_equal(const unit_t *a, const unit_t *b)
+UL_API ul_cmpres_t ul_cmp(const unit_t *a, const unit_t *b)
 {
 	if (!a || !b) {
 		ERROR("Invalid parameters");
-		return false;
+		return UL_ERROR;
 	}
 
+	int res = UL_SAME_UNIT;
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		if (a->exps[i] != b->exps[i])
-			return false;
+		if (a->exps[i] != b->exps[i]) {
+			res = 0;
+			break;
+		}
 	}
-	return ncmp(a->factor, b->factor) == 0;
+	if (ncmp(a->factor, b->factor) == 0) {
+		res |= UL_SAME_FACTOR;
+	}
+	return res;
 }
 
 UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with)
