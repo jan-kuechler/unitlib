@@ -54,7 +54,7 @@ UL_API bool ul_equal(const unit_t *a, const unit_t *b)
 	return ncmp(a->factor, b->factor) == 0;
 }
 
-UL_API bool ul_combine(unit_t *unit, const unit_t *with)
+UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with)
 {
 	if (!unit || !with) {
 		ERROR("Invalid parameter");
@@ -64,7 +64,7 @@ UL_API bool ul_combine(unit_t *unit, const unit_t *with)
 	return true;
 }
 
-UL_API bool ul_copy(unit_t *dst, const unit_t *src)
+UL_API bool ul_copy(unit_t *restrict dst, const unit_t *restrict src)
 {
 	if (!dst || !src) {
 		ERROR("Invalid parameter");

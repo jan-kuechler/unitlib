@@ -130,7 +130,7 @@ UL_API bool ul_equal(const unit_t *a, const unit_t *b);
  * @param src Source unit
  * @return success
  */
-UL_API bool ul_copy(unit_t *dst, const unit_t *src);
+UL_API bool ul_copy(unit_t *restrict dst, const unit_t *restrict src);
 
 /**
  * Multiplies a unit to a unit.
@@ -138,7 +138,7 @@ UL_API bool ul_copy(unit_t *dst, const unit_t *src);
  * @param with The other unit
  * @return success
  */
-UL_API bool ul_combine(unit_t *unit, const unit_t *with);
+UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with);
 
 /**
  * Builds the inverse of a unit

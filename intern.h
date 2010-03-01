@@ -31,13 +31,13 @@ static inline void init_unit(unit_t *unit)
 	unit->factor = 1.0;
 }
 
-static inline void copy_unit(const unit_t *src, unit_t *dst)
+static inline void copy_unit(const unit_t *restrict src, unit_t *restrict dst)
 {
 	memcpy(dst->exps, src->exps, EXPS_SIZE(dst));
 	dst->factor = src->factor;
 }
 
-static inline void add_unit(unit_t *to, const unit_t *other, int times)
+static inline void add_unit(unit_t *restrict to, const unit_t *restrict other, int times)
 {
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		to->exps[i] += (times * other->exps[i]);
