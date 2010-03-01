@@ -73,8 +73,7 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
-static bool try_parse_factor(const char *str, unit_t *unit,
-                             struct parser_state *state)
+static bool try_parse_factor(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit); assert(state);
 	char *endptr;

@@ -50,6 +50,14 @@ typedef enum ul_format
 	UL_FMT_LATEX_INLINE,
 } ul_format_t;
 
+typedef enum ul_cmpres
+{
+	UL_ERROR       = 0x00,
+	UL_SAME_UNIT   = 0x01,
+	UL_SAME_FACTOR = 0x02,
+	UL_EQUAL       = 0x03,
+} ul_cmpres_t;
+
 typedef struct ul_format_ops
 {
 	bool sort;
@@ -117,12 +125,35 @@ UL_API bool ul_load_rules(const char *path);
 UL_API bool ul_parse(const char *str, unit_t *unit);
 
 /**
+ * Returns the factor of a unit
+ * @param unit The unit
+ * @return The factor
+ */
+static inline ul_number ul_factor(const unit_t *unit)
+{
+	if (!unit)
+		return 0.0;
+	return unit->factor;
+}
+
+/**
+ * Compares two units
+ * @param a A unit
+ * @param b Another unit
+ * @return Compare result
+ */
+UL_API ul_cmpres_t ul_cmp(const unit_t *a, const unit_t *b);
+
+/**
  * Compares two units
  * @param a A unit
  * @param b Another unit
  * @return true if both units are equal
  */
-UL_API bool ul_equal(const unit_t *a, const unit_t *b);
+static inline bool ul_equal(const unit_t *a, const unit_t *b)
+{
+	return ul_cmp(a, b) == UL_EQUAL;
+}
 
 /**
  * Copies a unit into another
@@ -139,6 +170,14 @@ UL_API bool ul_copy(unit_t *restrict dst, const unit_t *restrict src);
  * @return success
  */
 UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with);
+
+/**
+ * Multiplies a unit with a factor
+ * @param unit The unit
+ * @param factor The factor
+ * @return success
+ */
+UL_API bool ul_mult(unit_t *unit, ul_number factor);
 
 /**
  * Builds the inverse of a unit
@@ -162,8 +201,7 @@ UL_API bool ul_sqrt(unit_t *unit);
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
-                      ul_fmtops_t *fmtp);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
 
 /**
  * Prints the unit to stdout according to the format
@@ -172,8 +210,7 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format,
-                            ul_fmtops_t *fmtp)
+static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
 {
 	return ul_fprint(stdout, unit, format, fmtp);
 }
@@ -187,7 +224,6 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format,
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
-                       ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
 
 #endif /*UNITLIB_H*/

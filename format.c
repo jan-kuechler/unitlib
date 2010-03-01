@@ -319,8 +319,7 @@ static bool _print(struct status *stat)
 	}
 }
 
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
-                      ul_fmtops_t *fmtp)
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
 {
 	struct f_info info = {
 		.out = f,
@@ -338,8 +337,7 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format,
 	return _print(&status);
 }
 
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit,
-                       ul_format_t format, ul_fmtops_t *fmtp)
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
 {
 	struct sn_info info = {
 		.buffer = buffer,
