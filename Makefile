@@ -15,6 +15,11 @@ TARGET = libunit.a
 DLL = libunit.dll
 IMPLIB = libunit.lib
 
+LUADLL = unitlib.dll
+LUA_VERSION = lua51
+LUA_INCLUDE = "$(LUA_DEV)/include"
+LUA_LIB     = "$(LUA_DEV)/lib"
+
 HEADER = unitlib-config.h unitlib.h
 
 SRCFILES = unitlib.c parser.c format.c
@@ -40,6 +45,8 @@ UNITTEST = ultest
 all: $(TARGET)
 
 dll: $(DLL)
+
+lua: $(LUADLL)
 
 install-dll: dll
 	cp $(DLL) $(WIN_DLL_INSTALL)
@@ -73,6 +80,9 @@ $(DLL): $(SRCFILES) $(HDRFILES) Makefile
 	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--output-def,libunit.def
 	lib.exe /DEF:libunit.def /OUT:libunit.lib /MACHINE:X86
 	
+$(LUADLL): luabinding.o $(OBJFILES) $(HDRFILES)
+	@$(CC) $(CFLAGS) -L$(LUA_LIB) -shared -o $(LUADLL) luabinding.o $(OBJFILES) -l$(LUA_VERSION)
+	
 unitlib.o: unitlib.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c
 	
@@ -81,6 +91,9 @@ parser.o: parser.c $(HDRFILES)
 	
 format.o: format.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o format.o -c format.c
+	
+luabinding.o: luabinding.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -I$(LUA_INCLUDE) -o luabinding.o -c luabinding.c
 	
 $(TESTPROG): $(TARGET) _test.c
 	@$(CC) -o $(TESTPROG) -g -L. _test.c -lunit
