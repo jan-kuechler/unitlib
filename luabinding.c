@@ -2,8 +2,9 @@
 #include <lauxlib.h>
 
 #include "unitlib.h"
+#include <string.h>
+#include "intern.h"
 
-#define EXPORT __declspec(dllexport)
 #define UNUSED(var) do{(void)(var);}while(0)
 
 #define UNIT "unit"
@@ -24,12 +25,47 @@ static unit_t *create_unit(lua_State *L)
 	return unit;
 }
 
-int l_test(lua_State *L)
+static void mult_uu(lua_State *L, unit_t *left, unit_t *right, bool inv)
 {
-	UNUSED(L);
-	ul_parse(NULL, NULL);
-	error(L);
-	return 0;
+	unit_t *res = create_unit(L);
+	if (!ul_copy(res, right))
+		error(L);
+	if (inv) {
+		if (!ul_inverse(res))
+		error(L);
+	}
+	if (!ul_combine(res, left))
+		error(L);
+}
+
+static void mult_un(lua_State *L, unit_t *unit, ul_number n, bool inv)
+{
+	unit_t *res = create_unit(L);
+	if (!ul_copy(res, unit))
+		error(L);
+
+	/* HACK: A ul_multiply(unit, n) function is needed! */
+
+	if (inv) {
+		if (ncmp(n, 0.0) == 0) {
+			luaL_error(L, "Cannot devide by 0");
+		}
+		n = 1 / n;
+	}
+	res->factor *= n;
+}
+
+static void mult_nu(lua_State *L, ul_number n, unit_t *unit, bool inv)
+{
+	unit_t *res = create_unit(L);
+	if (!ul_copy(res, unit))
+		error(L);
+
+	if (inv) {
+		if (!ul_inverse(res))
+			error(L);
+	}
+	res->factor *= n;
 }
 
 int l_init(lua_State *L)
@@ -55,6 +91,16 @@ int l_parse(lua_State *L)
 	}
 	return 1;
 }
+
+int l_parse_rule(lua_State *L)
+{
+	const char *str = luaL_checkstring(L, 1);
+	if (!ul_parse_rule(str)) {
+		error(L);
+	}
+	return 0;
+}
+
 int lm_tostring(lua_State *L)
 {
 	unit_t *unit = luaL_checkudata(L, 1, UNIT);
@@ -77,19 +123,71 @@ int lm_equal(lua_State *L)
 	return 1;
 }
 
-EXPORT int luaopen_unitlib(lua_State *L)
+int lm_mul(lua_State *L)
+{
+	if (lua_isnumber(L, 1)) {
+		ul_number n = luaL_checknumber(L, 1);
+		unit_t *unit = luaL_checkudata(L, 2, UNIT);
+		mult_nu(L, n, unit, false);
+	}
+	else if (lua_isnumber(L, 2)) {
+		unit_t *unit = luaL_checkudata(L, 1, UNIT);
+		ul_number n = luaL_checknumber(L, 2);
+		mult_un(L, unit, n, false);
+
+	}
+	else {
+		unit_t *left = luaL_checkudata(L, 1, UNIT);
+		unit_t *right  = luaL_checkudata(L, 2, UNIT);
+		mult_uu(L, left, right, false);
+	}
+	return 1;
+}
+
+int lm_div(lua_State *L)
+{
+	if (lua_isnumber(L, 1)) {
+		ul_number n = luaL_checknumber(L, 1);
+		unit_t *unit = luaL_checkudata(L, 2, UNIT);
+		mult_nu(L, n, unit, true);
+	}
+	else if (lua_isnumber(L, 2)) {
+		unit_t *unit = luaL_checkudata(L, 1, UNIT);
+		ul_number n = luaL_checknumber(L, 2);
+		mult_un(L, unit, n, true);
+
+	}
+	else {
+		unit_t *left = luaL_checkudata(L, 1, UNIT);
+		unit_t *right  = luaL_checkudata(L, 2, UNIT);
+		mult_uu(L, left, right, true);
+	}
+	return 1;
+}
+
+int lm_len(lua_State *L)
+{
+	unit_t *unit = luaL_checkudata(L, 1, UNIT);
+	lua_pushnumber(L, unit->factor);
+	return 1;
+}
+
+__declspec(dllexport) int luaopen_unitlib(lua_State *L)
 {
 	luaL_Reg lib[] = {
 		{"init",  l_init},
 		{"quit",  l_quit},
 		{"parse", l_parse},
-		{"test",  l_test},
+		{"parse_rule", l_parse_rule},
 		{NULL, NULL},
 	};
 
 	luaL_Reg meta[] = {
 		{"__tostring", lm_tostring},
 		{"__eq", lm_equal},
+		{"__mul", lm_mul},
+		{"__div", lm_div},
+		{"__len", lm_len},
 		{NULL, NULL},
 	};
 
