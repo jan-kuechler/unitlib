@@ -44,15 +44,15 @@ static void mult_un(lua_State *L, unit_t *unit, ul_number n, bool inv)
 	if (!ul_copy(res, unit))
 		error(L);
 
-	/* HACK: A ul_multiply(unit, n) function is needed! */
-
 	if (inv) {
 		if (ncmp(n, 0.0) == 0) {
 			luaL_error(L, "Cannot devide by 0");
 		}
 		n = 1 / n;
 	}
-	res->factor *= n;
+	if (!ul_mult(res, n)) {
+		error(L);
+	}
 }
 
 static void mult_nu(lua_State *L, ul_number n, unit_t *unit, bool inv)
@@ -65,7 +65,9 @@ static void mult_nu(lua_State *L, ul_number n, unit_t *unit, bool inv)
 		if (!ul_inverse(res))
 			error(L);
 	}
-	res->factor *= n;
+	if (!ul_mult(res, n)) {
+		error(L);
+	}
 }
 
 int l_init(lua_State *L)
@@ -168,7 +170,7 @@ int lm_div(lua_State *L)
 int lm_len(lua_State *L)
 {
 	unit_t *unit = luaL_checkudata(L, 1, UNIT);
-	lua_pushnumber(L, unit->factor);
+	lua_pushnumber(L, ul_factor(unit));
 	return 1;
 }
 
