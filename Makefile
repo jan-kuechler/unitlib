@@ -16,7 +16,9 @@ IMPLIB = libunit.lib
 LUADLL = unitlib.dll
 LUA_VERSION = lua51
 LUA_INCLUDE = "$(LUA_DEV)/include"
-LUA_LIB     = "$(LUA_DEV)/lib"
+LUA_LIBDIR  = "$(LUA_DEV)/lib"
+
+LUA_LIBS = -l$(LUA_VERSION) -lmsvcr80
 
 HEADER = unitlib.h
 
@@ -63,7 +65,7 @@ $(DLL): $(SRCFILES) $(HDRFILES)
 	@$(CC) $(CFLAGS) -shared -o $(DLL) $(SRCFILES) -Wl,--out-implib,$(IMPLIB)
 	
 $(LUADLL): luabinding.o $(OBJFILES) $(HDRFILES)
-	@$(CC) $(CFLAGS) -L$(LUA_LIB) -shared -o $(LUADLL) luabinding.o $(OBJFILES) -l$(LUA_VERSION)
+	@$(CC) $(CFLAGS) -L$(LUA_LIBDIR) -shared -o $(LUADLL) luabinding.o $(OBJFILES) $(LUA_LIBS)
 	
 unitlib.o: unitlib.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c
