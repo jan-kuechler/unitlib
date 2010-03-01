@@ -70,6 +70,16 @@ UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with)
 	return true;
 }
 
+UL_API bool ul_mult(unit_t *unit, ul_number factor)
+{
+	if (!unit) {
+		ERROR("Invalid parameter");
+		return false;
+	}
+	unit->factor *= factor;
+	return true;
+}
+
 UL_API bool ul_copy(unit_t *restrict dst, const unit_t *restrict src)
 {
 	if (!dst || !src) {

@@ -172,6 +172,14 @@ UL_API bool ul_copy(unit_t *restrict dst, const unit_t *restrict src);
 UL_API bool ul_combine(unit_t *restrict unit, const unit_t *restrict with);
 
 /**
+ * Multiplies a unit with a factor
+ * @param unit The unit
+ * @param factor The factor
+ * @return success
+ */
+UL_API bool ul_mult(unit_t *unit, ul_number factor);
+
+/**
  * Builds the inverse of a unit
  * @param unit The unit
  * @return success
