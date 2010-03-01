@@ -71,7 +71,7 @@ $(SMASHPROG): $(TARGET) _test.c
 	@$(CC) -o $(SMASHPROG) -L. -DSMASH _test.c -lunit
 	
 $(UNITTEST): $(TARGET) unittest.c
-	@$(CC) -o $(UNITTEST) -L. unittest.c -lunit
+	@$(CC) -std=gnu99 -o $(UNITTEST) -L. unittest.c -lunit
 	
 clean:
 	@rm -f $(OBJFILES)

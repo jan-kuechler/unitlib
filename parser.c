@@ -48,11 +48,9 @@ static rule_t *last_rule(void)
 static rule_t *get_rule(const char *sym)
 {
 	assert(sym);
-	rule_t *cur = rules;
-	while (cur) {
+	for (rule_t *cur = rules; cur; cur = cur->next) {
 		if (strcmp(cur->symbol, sym) == 0)
 			return cur;
-		cur = cur->next;
 	}
 	return NULL;
 }
@@ -69,7 +67,7 @@ static size_t skipspace(const char *text, size_t start)
 static size_t nextspace(const char *text, size_t start)
 {
 	assert(text);
-	size_t i=start;
+	size_t i = start;
 	while (text[i] && !isspace(text[i]))
 		i++;
 	return i;
@@ -343,8 +341,7 @@ UL_API bool ul_parse_rule(const char *rule)
 
 	debug("Parsing rule '%s'", rule);
 
-	size_t i=0;
-	for (; i < len; ++i) {
+	for (size_t i=0; i < len; ++i) {
 		if (rule[i] == '=') {
 			debug("Split at %d", i);
 			splitpos = i;
@@ -421,8 +418,7 @@ UL_API bool ul_load_rules(const char *path)
 
 UL_LINKAGE void _ul_init_rules(void)
 {
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		base_rules[i].symbol = _ul_symbols[i];
 
 		init_unit(&base_rules[i].unit);

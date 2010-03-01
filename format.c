@@ -115,12 +115,10 @@ static bool print_sorted(struct status *stat, printer_t func, bool *first)
 {
 	bool printed[NUM_BASE_UNITS] = {0};
 	bool _first = true;
-	int i=0;
-
 	bool *fptr = first ? first : &_first;
 
 	// Print any sorted order
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		int unit = stat->fmtp->order[i];
 		if (unit == U_ANY) {
 			break;
@@ -130,7 +128,7 @@ static bool print_sorted(struct status *stat, printer_t func, bool *first)
 		printed[unit] = true;
 	}
 	// Print the rest
-	for (i=0; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if (!printed[i]) {
 			int exp = stat->unit->exps[i];
 			if (exp != 0) {
@@ -143,10 +141,9 @@ static bool print_sorted(struct status *stat, printer_t func, bool *first)
 
 static bool print_normal(struct status *stat, printer_t func, bool *first)
 {
-	int i=0;
 	bool _first = true;
 	bool *fptr = first ? first : &_first;
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		CHECK(func(stat,i,stat->unit->exps[i], fptr));
 	}
 	return true;
@@ -280,7 +277,6 @@ static bool p_latex_frac(struct status *stat)
 
 static bool p_latex_inline(struct status *stat)
 {
-	int i=0;
 	bool first = false;
 	CHECK(_putc(stat, '$'));
 
@@ -293,7 +289,7 @@ static bool p_latex_inline(struct status *stat)
 		CHECK(_putc(stat, '}'));
 	}
 
-	for (i=0; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		int exp = stat->unit->exps[i];
 		if (exp != 0) {
 			CHECK(_latex_one(stat, i, exp, &first));

@@ -39,8 +39,7 @@ static inline void copy_unit(const unit_t *src, unit_t *dst)
 
 static inline void add_unit(unit_t *to, const unit_t *other, int times)
 {
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		to->exps[i] += (times * other->exps[i]);
 	}
 	to->factor *= _pown(other->factor, times);

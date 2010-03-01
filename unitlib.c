@@ -47,8 +47,7 @@ UL_API bool ul_equal(const unit_t *a, const unit_t *b)
 		return false;
 	}
 
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if (a->exps[i] != b->exps[i])
 			return false;
 	}
@@ -86,8 +85,7 @@ UL_API bool ul_inverse(unit_t *unit)
 		return false;
 	}
 
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		unit->exps[i] = -unit->exps[i];
 	}
 
@@ -101,14 +99,14 @@ UL_API bool ul_sqrt(unit_t *unit)
 		ERROR("Invalid parameter");
 		return false;
 	}
-	int i=0;
-	for (; i < NUM_BASE_UNITS; ++i) {
+
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if ((unit->exps[i] % 2) != 0) {
 			ERROR("Cannot take root of an odd exponent");
 			return false;
 		}
 	}
-	for (; i < NUM_BASE_UNITS; ++i) {
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		unit->exps[i] /= 2;
 	}
 	unit->factor = _sqrtn(unit->factor);
