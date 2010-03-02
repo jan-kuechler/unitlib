@@ -189,7 +189,7 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 	if (!unit_and_prefix(symbol, &rule, &prefix))
 		return false;
 
-	prefix = _pown(prefix, abs(exp));
+	prefix = _pown(prefix, exp);
 
 	// And add the definitions
 	add_unit(unit, rule, state->sign * exp);
