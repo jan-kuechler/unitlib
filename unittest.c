@@ -290,23 +290,26 @@ TEST_SUITE(format)
 		char buffer[128];
 		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
 		FAIL_MSG("Error: %s", ul_error());
-
 		CHECK(strcmp(buffer, "1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
 
 		kg.factor = 1.5;
 		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
 		FAIL_MSG("Error: %s", ul_error());
-
 		CHECK(strcmp(buffer, "1.5 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
 
 		kg.factor = -1.0;
 		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
 		FAIL_MSG("Error: %s", ul_error());
-
 		CHECK(strcmp(buffer, "-1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
 	END_TEST
 
 	TEST
@@ -318,6 +321,9 @@ TEST_SUITE(format)
 
 		CHECK(strcmp(buffer, "1 m kg s^-2") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+
+		CHECK(ul_length(&N, UL_FMT_PLAIN) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_PLAIN));
 	END_TEST
 
 	TEST
@@ -329,6 +335,9 @@ TEST_SUITE(format)
 
 		CHECK(strcmp(buffer, "$1 \\text{ m} \\text{ kg} \\text{ s}^{-2}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+
+		CHECK(ul_length(&N, UL_FMT_LATEX_INLINE) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_INLINE));
 	END_TEST
 
 	TEST
@@ -340,6 +349,9 @@ TEST_SUITE(format)
 
 		CHECK(strcmp(buffer, "\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+
+		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_FRAC));
 	END_TEST
 
 	TEST
