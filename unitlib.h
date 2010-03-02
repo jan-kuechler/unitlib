@@ -226,4 +226,12 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t 
  */
 UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
 
+/**
+ * Returns the length of the formated unit
+ * @param unit   The unit
+ * @param format Format option
+ * @return Length of the formated string
+ */
+UL_API size_t ul_length(const unit_t *unit, ul_format_t format);
+
 #endif /*UNITLIB_H*/

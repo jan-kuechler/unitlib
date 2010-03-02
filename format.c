@@ -45,6 +45,19 @@ static bool sn_putc(char c, void *i)
 	return true;
 }
 
+struct cnt_info
+{
+	size_t count;
+};
+
+static bool cnt_putc(char c, void *i)
+{
+	(void)c;
+	struct cnt_info *info = i;
+	info->count++;
+	return true;
+}
+
 #define _putc(s,c) (s)->putc((c),(s)->info)
 
 #define CHECK(x) do { if (!(x)) return false; } while (0)
@@ -356,4 +369,21 @@ UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_forma
 	memset(buffer, 0, buflen);
 
 	return _print(&status);
+}
+
+UL_API size_t ul_length(const unit_t *unit, ul_format_t format)
+{
+	struct cnt_info info = {0};
+
+	struct status status = {
+		.putc = cnt_putc,
+		.info = &info,
+		.unit = unit,
+		.format = format,
+		.fmtp   = NULL,
+		.extra  = NULL,
+	};
+
+	_print(&status);
+	return info.count;
 }
