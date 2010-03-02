@@ -451,6 +451,10 @@ static void init_prefixes(void)
 		prefixes[i] = 0.0;
 	}
 
+	prefixes['Y'] = 1e24;  // yotta
+	prefixes['Z'] = 1e21;  // zetta
+	prefixes['E'] = 1e18;  // exa
+	prefixes['P'] = 1e15;  // peta
 	prefixes['T'] = 1e12;  // tera
 	prefixes['G'] = 1e9;   // giga
 	prefixes['M'] = 1e6;   // mega
@@ -463,6 +467,14 @@ static void init_prefixes(void)
 	prefixes['u'] = 1e-6;  // micro
 	prefixes['n'] = 1e-9;  // nano
 	prefixes['p'] = 1e-12; // pico
+	prefixes['f'] = 1e-15; // femto
+
+	// Note: the following prefixes are so damn small,
+	//       that they get truncated to 0.
+	//       Do not use them!
+	prefixes['a'] = 1e-18; // atto
+	prefixes['z'] = 1e-21; // zepto
+	prefixes['y'] = 1e-24; // yocto
 }
 
 UL_LINKAGE bool _ul_init_rules(void)
