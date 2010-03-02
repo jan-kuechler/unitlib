@@ -8,6 +8,7 @@
 #define UNUSED(var) do{(void)(var);}while(0)
 
 #define UNIT "unit"
+#define CLEANUP "__ul_cleanup"
 
 static void error(lua_State *L)
 {
@@ -174,6 +175,13 @@ int lm_len(lua_State *L)
 	return 1;
 }
 
+int m_gc(lua_State *L)
+{
+	UNUSED(L);
+	printf("m_gc\n");
+	return 0;
+}
+
 __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 {
 	luaL_Reg lib[] = {
@@ -193,7 +201,22 @@ __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 		{NULL, NULL},
 	};
 
+	luaL_Reg cleanup[] = {
+		{"__gc", m_gc},
+		{NULL, NULL},
+	};
+
 	luaL_register(L, "unitlib", lib);
+
+	luaL_newmetatable(L, CLEANUP);
+	luaL_register(L, NULL, cleanup);
+	lua_pop(L, 1);
+
+	lua_pushstring(L, "__cleanup_proxy");
+	lua_newuserdata(L, 1);
+	luaL_getmetatable(L, CLEANUP);
+	lua_setmetatable(L, -2);
+	lua_settable(L, -3);
 
 	luaL_newmetatable(L, UNIT);
 	luaL_register(L, NULL, meta);
