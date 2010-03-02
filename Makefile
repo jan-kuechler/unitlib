@@ -2,8 +2,10 @@
 # Makefile for unitlib
 ##
 
+MSVC_COMPAT = -mno-cygwin -mms-bitfields
+
 CC = gcc
-CFLAGS = -O2 -std=c99 -Wall -Wextra
+CFLAGS = -O2 -std=c99 -Wall -Wextra $(MSVC_COMPAT)
 
 AR = ar
 RANLIB = ranlib
@@ -13,11 +15,12 @@ TARGET = libunit.a
 DLL = libunit.dll
 IMPLIB = libunit.lib
 
-HEADER = unitlib.h
+HEADER = unitlib-config.h unitlib.h
 
 SRCFILES = unitlib.c parser.c format.c
-HDRFILES = unitlib.h intern.h config.h
+HDRFILES = unitlib.h intern.h unitlib-config.h
 
+DLL_INSTALL = /c/Windows
 LIB_INSTALL = /g/Programmieren/lib
 HDR_INSTALL = /g/Programmieren/include
 
@@ -35,7 +38,7 @@ all: $(TARGET)
 dll: $(DLL)
 
 install-dll: dll
-	cp $(DLL) $(LIB_INSTALL)
+	cp $(DLL) $(DLL_INSTALL)
 	cp $(IMPLIB) $(LIB_INSTALL)
 	cp $(HEADER) $(HDR_INSTALL)
 

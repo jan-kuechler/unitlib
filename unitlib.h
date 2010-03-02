@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "config.h"
+#include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
 #define UL_VERSION   "0.4dev"
