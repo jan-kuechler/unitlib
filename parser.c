@@ -20,6 +20,8 @@ static rule_t *rules = NULL;
 // The base rules
 static rule_t base_rules[NUM_BASE_UNITS];
 
+static ul_number prefixes[256];
+
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
 struct parser_state
@@ -116,6 +118,33 @@ static bool handle_special(const char *str, struct parser_state *state)
 	return false;
 }
 
+static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
+{
+	rule_t *rule = get_rule(sym);
+	if (rule) {
+		*unit = &rule->unit;
+		*prefix = 1.0;
+		return true;
+	}
+
+	size_t p = (size_t)sym[0];
+	debug("Got prefix: %c", (char)p);
+	if (prefixes[p] == 0.0) {
+		ERROR("Unknown symbol: '%s'", sym);
+		return false;
+	}
+
+	rule = get_rule(sym + 1);
+	if (!rule) {
+		ERROR("Unknown symbol: '%s' with prefix %c", sym + 1, (char)p);
+		return false;
+	}
+
+	*unit = &rule->unit;
+	*prefix = prefixes[p];
+	return true;
+}
+
 static bool parse_item(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit); assert(state);
@@ -155,15 +184,16 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 	}
 	debug("Exponent is %d", exp);
 
-	// Find the matching rule
-	rule_t *rule = get_rule(symbol);
-	if (!rule) {
-		ERROR("No matching rule found for '%s'", symbol);
+	unit_t *rule;
+	ul_number prefix;
+	if (!unit_and_prefix(symbol, &rule, &prefix))
 		return false;
-	}
+
+	prefix = _pown(prefix, abs(exp));
 
 	// And add the definitions
-	add_unit(unit, &rule->unit, state->sign * exp);
+	add_unit(unit, rule, state->sign * exp);
+	unit->factor *= prefix;
 
 	return true;
 }
@@ -415,7 +445,39 @@ UL_API bool ul_load_rules(const char *path)
 	return ok;
 }
 
-UL_LINKAGE void _ul_init_rules(void)
+static void init_prefixes(void)
+{
+	for (int i=0; i < 256; ++i) {
+		prefixes[i] = 0.0;
+	}
+
+	prefixes['Y'] = 1e24;  // yotta
+	prefixes['Z'] = 1e21;  // zetta
+	prefixes['E'] = 1e18;  // exa
+	prefixes['P'] = 1e15;  // peta
+	prefixes['T'] = 1e12;  // tera
+	prefixes['G'] = 1e9;   // giga
+	prefixes['M'] = 1e6;   // mega
+	prefixes['k'] = 1e3;   // kilo
+	prefixes['h'] = 1e2;   // hecto
+	// missing: da - deca
+	prefixes['d'] = 1e-1;  // deci
+	prefixes['c'] = 1e-2;  // centi
+	prefixes['m'] = 1e-3;  // milli
+	prefixes['u'] = 1e-6;  // micro
+	prefixes['n'] = 1e-9;  // nano
+	prefixes['p'] = 1e-12; // pico
+	prefixes['f'] = 1e-15; // femto
+
+	// Note: the following prefixes are so damn small,
+	//       that they get truncated to 0.
+	//       Do not use them!
+	prefixes['a'] = 1e-18; // atto
+	prefixes['z'] = 1e-21; // zepto
+	prefixes['y'] = 1e-24; // yocto
+}
+
+UL_LINKAGE bool _ul_init_rules(void)
 {
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		base_rules[i].symbol = _ul_symbols[i];
@@ -428,6 +490,17 @@ UL_LINKAGE void _ul_init_rules(void)
 	}
 	dynamic_rules = NULL;
 	rules = base_rules;
+
+	// stupid inconsistend SI system...
+	unit_t gram = {
+		{[U_KILOGRAM] = 1},
+		1e-3,
+	};
+	if (!add_rule("g", &gram, true))
+		return false;
+
+	init_prefixes();
+	return true;
 }
 
 UL_LINKAGE void _ul_free_rules(void)

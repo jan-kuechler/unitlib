@@ -20,7 +20,7 @@ UL_LINKAGE void _ul_debug(const char *fmt, ...);
 UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...);
 #define ERROR(msg, ...) _ul_set_error(__func__, __LINE__, msg, ##__VA_ARGS__)
 
-UL_LINKAGE void _ul_init_rules(void);
+UL_LINKAGE bool _ul_init_rules(void);
 UL_LINKAGE void _ul_free_rules(void);
 
 #define EXPS_SIZE(unit) (sizeof((unit)->exps[0]) * NUM_BASE_UNITS)

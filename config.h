@@ -33,4 +33,14 @@ typedef double ul_number;
 
 #endif
 
+#ifdef __STDC_VERSION__
+#if (__STDC_VERSION__ == 199901L)
+#define _HAS_C99
+#endif
+#endif
+
+#ifndef _HAS_C99
+#define restrict
+#endif
+
 #endif /*UL_CONFIG_H*/

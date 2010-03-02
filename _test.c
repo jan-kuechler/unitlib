@@ -67,6 +67,17 @@ int main(void)
 		printf("\n");
 	}
 
+	{
+		const char *u = "1 mg";
+		unit_t unit;
+		if (!ul_parse(u, &unit))
+			printf("%s\n", ul_error());
+
+		printf("%s = ", u);
+		ul_print(&unit, UL_FMT_PLAIN, NULL);
+		printf("\n");
+	}
+
 	ul_quit();
 
 	return 0;
