@@ -16,7 +16,7 @@ IMPLIB = libunit.lib
 HEADER = unitlib.h
 
 SRCFILES = unitlib.c parser.c format.c
-HDRFILES = unitlib.h intern.h
+HDRFILES = unitlib.h intern.h config.h
 
 LIB_INSTALL = /g/Programmieren/lib
 HDR_INSTALL = /g/Programmieren/include
