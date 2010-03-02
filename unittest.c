@@ -341,6 +341,16 @@ TEST_SUITE(format)
 		CHECK(strcmp(buffer, "\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 	END_TEST
+
+	TEST
+		unit_t zeroKg = MAKE_UNIT(0.0, U_KILOGRAM, 1);
+
+		char buffer[128];
+		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN, NULL));
+		FAIL_MSG("Error: %s", ul_error());
+		CHECK(strcmp(buffer, "0 kg") == 0);
+		FAIL_MSG("buffer: '%s'", buffer);
+	END_TEST
 END_TEST_SUITE()
 
 int main(void)
