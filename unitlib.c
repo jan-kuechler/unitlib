@@ -163,7 +163,8 @@ UL_API bool ul_init(void)
 		dbg_out = stderr;
 
 	debug("Initializing base rules");
-	_ul_init_rules();
+	if (!_ul_init_rules())
+		return false;
 
 	const char *rulePath = getenv("UL_RULES");
 	if (rulePath) {
