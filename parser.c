@@ -183,17 +183,16 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 		}
 	}
 	debug("Exponent is %d", exp);
+	exp *= state->sign;
 
 	unit_t *rule;
 	ul_number prefix;
 	if (!unit_and_prefix(symbol, &rule, &prefix))
 		return false;
 
-	prefix = _pown(prefix, exp);
-
 	// And add the definitions
-	add_unit(unit, rule, state->sign * exp);
-	unit->factor *= prefix;
+	add_unit(unit, rule,  exp);
+	unit->factor *= _pown(prefix, exp);
 
 	return true;
 }
