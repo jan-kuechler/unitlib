@@ -558,4 +558,11 @@ UL_LINKAGE void _ul_free_rules(void)
 		free(cur);
 		cur = next;
 	}
+
+	prefix_t *pref = prefixes;
+	while (pref) {
+		prefix_t *next = pref->next;
+		free(pref);
+		pref = next;
+	}
 }
