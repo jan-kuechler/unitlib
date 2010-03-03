@@ -59,12 +59,6 @@ typedef enum ul_cmpres
 	UL_EQUAL       = 0x03,
 } ul_cmpres_t;
 
-typedef struct ul_format_ops
-{
-	bool sort;
-	int  order[NUM_BASE_UNITS];
-} ul_fmtops_t;
-
 typedef struct unit
 {
 	int exps[NUM_BASE_UNITS];
@@ -214,7 +208,7 @@ UL_API bool ul_sqrt(unit_t *unit);
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format);
 
 /**
  * Prints the unit to stdout according to the format
@@ -223,9 +217,9 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops
  * @param fmtp   Additional format parameters
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
+static inline bool ul_print(const unit_t *unit, ul_format_t format)
 {
-	return ul_fprint(stdout, unit, format, fmtp);
+	return ul_fprint(stdout, unit, format);
 }
 
 /**
@@ -237,7 +231,7 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t 
  * @param fmtp   Additional format parameters
  * @return success
  */
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format);
 
 /**
  * Returns the length of the formated unit

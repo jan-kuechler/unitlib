@@ -360,7 +360,7 @@ TEST_SUITE(format)
 		unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
@@ -368,7 +368,7 @@ TEST_SUITE(format)
 		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
 
 		kg.factor = 1.5;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1.5 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
@@ -376,7 +376,7 @@ TEST_SUITE(format)
 		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
 
 		kg.factor = -1.0;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "-1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
@@ -388,7 +388,7 @@ TEST_SUITE(format)
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "1 m kg s^-2") == 0);
@@ -402,7 +402,7 @@ TEST_SUITE(format)
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "$1 \\text{ m} \\text{ kg} \\text{ s}^{-2}$") == 0);
@@ -416,7 +416,7 @@ TEST_SUITE(format)
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}") == 0);
@@ -430,7 +430,7 @@ TEST_SUITE(format)
 		unit_t zeroKg = MAKE_UNIT(0.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "0 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
