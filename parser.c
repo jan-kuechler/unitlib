@@ -50,7 +50,18 @@ static rule_t *last_rule(void)
 			return cur;
 		cur = cur->next;
 	}
+	// rules cannot be NULL
 	assert(false);
+	return NULL;
+}
+
+static rule_t *get_rule(const char *sym)
+{
+	assert(sym);
+	for (rule_t *cur = rules; cur; cur = cur->next) {
+		if (strcmp(cur->symbol, sym) == 0)
+			return cur;
+	}
 	return NULL;
 }
 
@@ -61,16 +72,6 @@ static prefix_t *last_prefix(void)
 		if (!cur->next)
 			return cur;
 		cur = cur->next;
-	}
-	return NULL;
-}
-
-static rule_t *get_rule(const char *sym)
-{
-	assert(sym);
-	for (rule_t *cur = rules; cur; cur = cur->next) {
-		if (strcmp(cur->symbol, sym) == 0)
-			return cur;
 	}
 	return NULL;
 }
@@ -494,26 +495,26 @@ UL_API bool ul_load_rules(const char *path)
 
 static bool init_prefixes(void)
 {
-	if (!add_prefix('Y', 1e24)) return false;
-	if (!add_prefix('Z', 1e21)) return false; //zetta
-	if (!add_prefix('E', 1e18)) return false; //exa
-	if (!add_prefix('P', 1e15)) return false; //peta
-	if (!add_prefix('T', 1e12)) return false; //tera
-	if (!add_prefix('G', 1e9))  return false; // giga
-	if (!add_prefix('M', 1e6))  return false; // mega
-	if (!add_prefix('k', 1e3))  return false; // kilo
-	if (!add_prefix('h', 1e2))  return false; // hecto
+	if (!add_prefix('Y', 1e24))  return false;
+	if (!add_prefix('Z', 1e21))  return false; //zetta
+	if (!add_prefix('E', 1e18))  return false; //exa
+	if (!add_prefix('P', 1e15))  return false; //peta
+	if (!add_prefix('T', 1e12))  return false; //tera
+	if (!add_prefix('G', 1e9))   return false; // giga
+	if (!add_prefix('M', 1e6))   return false; // mega
+	if (!add_prefix('k', 1e3))   return false; // kilo
+	if (!add_prefix('h', 1e2))   return false; // hecto
 	// missing: da - deca
-	if (!add_prefix('d', 1e-1)) return false; //deci
-	if (!add_prefix('c', 1e-2)) return false; //centi
-	if (!add_prefix('m', 1e-3)) return false; //milli
-	if (!add_prefix('u', 1e-6)) return false; //micro
-	if (!add_prefix('n', 1e-9)) return false; //nano
-	if (!add_prefix('p', 1e-12))return false; // pico
-	if (!add_prefix('f', 1e-15))return false; // femto
-	if (!add_prefix('a', 1e-18))return false; // atto
-	if (!add_prefix('z', 1e-21))return false; // zepto
-	if (!add_prefix('y', 1e-24))return false; // yocto
+	if (!add_prefix('d', 1e-1))  return false; //deci
+	if (!add_prefix('c', 1e-2))  return false; //centi
+	if (!add_prefix('m', 1e-3))  return false; //milli
+	if (!add_prefix('u', 1e-6))  return false; //micro
+	if (!add_prefix('n', 1e-9))  return false; //nano
+	if (!add_prefix('p', 1e-12)) return false; // pico
+	if (!add_prefix('f', 1e-15)) return false; // femto
+	if (!add_prefix('a', 1e-18)) return false; // atto
+	if (!add_prefix('z', 1e-21)) return false; // zepto
+	if (!add_prefix('y', 1e-24)) return false; // yocto
 
 	return true;
 }
