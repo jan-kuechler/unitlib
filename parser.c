@@ -15,12 +15,19 @@ typedef struct rule
 	struct rule *next;
 } rule_t;
 
+typedef struct prefix
+{
+	char symbol;
+	ul_number value;
+	struct prefix *next;
+} prefix_t;
+
 // A list of all rules
 static rule_t *rules = NULL;
 // The base rules
 static rule_t base_rules[NUM_BASE_UNITS];
 
-static ul_number prefixes[256];
+static prefix_t *prefixes = NULL;
 
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
@@ -47,11 +54,31 @@ static rule_t *last_rule(void)
 	return NULL;
 }
 
+static prefix_t *last_prefix(void)
+{
+	prefix_t *cur = prefixes;
+	while (cur) {
+		if (!cur->next)
+			return cur;
+		cur = cur->next;
+	}
+	return NULL;
+}
+
 static rule_t *get_rule(const char *sym)
 {
 	assert(sym);
 	for (rule_t *cur = rules; cur; cur = cur->next) {
 		if (strcmp(cur->symbol, sym) == 0)
+			return cur;
+	}
+	return NULL;
+}
+
+static prefix_t *get_prefix(char sym)
+{
+	for (prefix_t *cur = prefixes; cur; cur = cur->next) {
+		if (cur->symbol == sym)
 			return cur;
 	}
 	return NULL;
@@ -127,21 +154,22 @@ static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
 		return true;
 	}
 
-	size_t p = (size_t)sym[0];
-	debug("Got prefix: %c", (char)p);
-	if (prefixes[p] == 0.0) {
+	char p = sym[0];
+	debug("Got prefix: %c", p);
+	prefix_t *pref = get_prefix(p);
+	if (!pref) {
 		ERROR("Unknown symbol: '%s'", sym);
 		return false;
 	}
 
 	rule = get_rule(sym + 1);
 	if (!rule) {
-		ERROR("Unknown symbol: '%s' with prefix %c", sym + 1, (char)p);
+		ERROR("Unknown symbol: '%s' with prefix %c", sym + 1, p);
 		return false;
 	}
 
 	*unit = &rule->unit;
-	*prefix = prefixes[p];
+	*prefix = pref->value;
 	return true;
 }
 
@@ -270,6 +298,26 @@ static bool add_rule(const char *symbol, const unit_t *unit, bool force)
 	rule_t *last = last_rule();
 	last->next = rule;
 
+	return true;
+}
+
+static bool add_prefix(char sym, ul_number n)
+{
+	prefix_t *pref = malloc(sizeof(*pref));
+	if (!pref) {
+		ERROR("Failed to allocate %d bytes", sizeof(*pref));
+		return false;
+	}
+
+	pref->symbol = sym;
+	pref->value  = n;
+	pref->next = NULL;
+
+	prefix_t *last = last_prefix();
+	if (last)
+		last->next = pref;
+	else
+		prefixes = pref;
 	return true;
 }
 
@@ -444,36 +492,30 @@ UL_API bool ul_load_rules(const char *path)
 	return ok;
 }
 
-static void init_prefixes(void)
+static bool init_prefixes(void)
 {
-	for (int i=0; i < 256; ++i) {
-		prefixes[i] = 0.0;
-	}
-
-	prefixes['Y'] = 1e24;  // yotta
-	prefixes['Z'] = 1e21;  // zetta
-	prefixes['E'] = 1e18;  // exa
-	prefixes['P'] = 1e15;  // peta
-	prefixes['T'] = 1e12;  // tera
-	prefixes['G'] = 1e9;   // giga
-	prefixes['M'] = 1e6;   // mega
-	prefixes['k'] = 1e3;   // kilo
-	prefixes['h'] = 1e2;   // hecto
+	if (!add_prefix('Y', 1e24)) return false;
+	if (!add_prefix('Z', 1e21)) return false; //zetta
+	if (!add_prefix('E', 1e18)) return false; //exa
+	if (!add_prefix('P', 1e15)) return false; //peta
+	if (!add_prefix('T', 1e12)) return false; //tera
+	if (!add_prefix('G', 1e9))  return false; // giga
+	if (!add_prefix('M', 1e6))  return false; // mega
+	if (!add_prefix('k', 1e3))  return false; // kilo
+	if (!add_prefix('h', 1e2))  return false; // hecto
 	// missing: da - deca
-	prefixes['d'] = 1e-1;  // deci
-	prefixes['c'] = 1e-2;  // centi
-	prefixes['m'] = 1e-3;  // milli
-	prefixes['u'] = 1e-6;  // micro
-	prefixes['n'] = 1e-9;  // nano
-	prefixes['p'] = 1e-12; // pico
-	prefixes['f'] = 1e-15; // femto
+	if (!add_prefix('d', 1e-1)) return false; //deci
+	if (!add_prefix('c', 1e-2)) return false; //centi
+	if (!add_prefix('m', 1e-3)) return false; //milli
+	if (!add_prefix('u', 1e-6)) return false; //micro
+	if (!add_prefix('n', 1e-9)) return false; //nano
+	if (!add_prefix('p', 1e-12))return false; // pico
+	if (!add_prefix('f', 1e-15))return false; // femto
+	if (!add_prefix('a', 1e-18))return false; // atto
+	if (!add_prefix('z', 1e-21))return false; // zepto
+	if (!add_prefix('y', 1e-24))return false; // yocto
 
-	// Note: the following prefixes are so damn small,
-	//       that they get truncated to 0.
-	//       Do not use them!
-	prefixes['a'] = 1e-18; // atto
-	prefixes['z'] = 1e-21; // zepto
-	prefixes['y'] = 1e-24; // yocto
+	return true;
 }
 
 UL_LINKAGE bool _ul_init_rules(void)
@@ -498,7 +540,8 @@ UL_LINKAGE bool _ul_init_rules(void)
 	if (!add_rule("g", &gram, true))
 		return false;
 
-	init_prefixes();
+	if (!init_prefixes())
+		return false;
 	return true;
 }
 
