@@ -122,8 +122,10 @@ static bool is_special(const char *str)
 	if (strlen(str) == 1) {
 		switch (str[0]) {
 		case '*':
+			// shall be ignored
 			return true;
 		case '/':
+			// change sign
 			return true;
 		}
 	}

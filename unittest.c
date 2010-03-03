@@ -171,6 +171,33 @@ TEST_SUITE(parser)
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(ul_parse_rule("!Recurse = Recurse") == false);
 	END_TEST
+
+	TEST
+		static char prefs[] = "YZEPTGMkh dcmunpfazy";
+		static ul_number factors[] = {
+			1e24, 1e21, 1e18, 1e15, 1e12, 1e9, 1e6, 1e3, 1e2, 1,
+			1e-1, 1e-2, 1e-3, 1e-6, 1e-9, 1e-12, 1e-15, 1e-18, 1e-21, 1e-24,
+		};
+
+		size_t num_prefs = strlen(prefs);
+		FATAL((sizeof(factors) / sizeof(factors[0])) != num_prefs);
+
+		for (size_t i = 0; i < num_prefs; ++i) {
+			char expr[128] = "";
+			snprintf(expr, 128, "5 %cm", prefs[i]);
+
+			unit_t u;
+			CHECK(ul_parse(expr, &u));
+			FAIL_MSG("Failed to parse: '%s' (%s)", expr, ul_error());
+
+			CHECK(ncmp(ul_factor(&u), 5 * factors[i]) == 0);
+			FAIL_MSG("Factor: %g instead of %g (%c)", ul_factor(&u), 5 * factors[i], prefs[i]);
+
+			// check kilogram, the only base unit with a prefix
+			snprintf(expr, 128, "%cg", prefs[i]);
+			CHECK(ul_parse(expr, &u));
+		}
+	END_TEST
 END_TEST_SUITE()
 
 TEST_SUITE(core)
@@ -391,6 +418,14 @@ int main(void)
 
 #ifdef GET_TEST_DEFS
 #define PRINT(o, lvl, ...) do { if ((o)->loglvl >= lvl) printf(__VA_ARGS__); } while (0)
+
+#define FATAL(expr) \
+	do { \
+		if (expr) { \
+			PRINT(_o, L_RESULT, "[%s-%d] Fatal: %s\n", _name, _id, #expr); \
+			exit(1); \
+		} \
+	} while (0)
 
 #define CHECK(expr) \
 	do { \

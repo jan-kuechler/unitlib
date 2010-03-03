@@ -18,7 +18,7 @@ int main(void)
 	}
 
 	unit_t unit;
-	if (!ul_parse("0.2 N^2 * 0.75 m^-1", &unit)) {
+	if (!ul_parse("( 0.2 N^2 ) * 0.75 m^-1", &unit)) {
 		printf("Error: %s\n", ul_error());
 	}
 
