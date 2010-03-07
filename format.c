@@ -6,7 +6,7 @@
 
 struct status
 {
-	bool (*putc)(char c, void *info);
+	bool (*put_char)(char c, void *info);
 	void *info;
 
 	const unit_t *unit;
@@ -58,7 +58,7 @@ static bool cnt_putc(char c, void *i)
 	return true;
 }
 
-#define _putc(s,c) (s)->putc((c),(s)->info)
+#define _putc(s,c) (s)->put_char((c),(s)->info)
 
 #define CHECK(x) do { if (!(x)) return false; } while (0)
 
@@ -338,7 +338,7 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops
 	};
 
 	struct status status = {
-		.putc = f_putc,
+		.put_char = f_putc,
 		.info = &info,
 		.unit = unit,
 		.format = format,
@@ -358,7 +358,7 @@ UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_forma
 	};
 
 	struct status status = {
-		.putc = sn_putc,
+		.put_char = sn_putc,
 		.info = &info,
 		.unit = unit,
 		.format = format,
@@ -376,7 +376,7 @@ UL_API size_t ul_length(const unit_t *unit, ul_format_t format)
 	struct cnt_info info = {0};
 
 	struct status status = {
-		.putc = cnt_putc,
+		.put_char = cnt_putc,
 		.info = &info,
 		.unit = unit,
 		.format = format,
