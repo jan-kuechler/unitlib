@@ -112,7 +112,7 @@ static bool try_parse_factor(const char *str, unit_t *unit, struct parser_state 
 		debug("'%s' is not a factor", str);
 		return false;
 	}
-	unit->factor *= f;
+	unit->factor *= _pown(f, state->sign);
 	return true;
 }
 
