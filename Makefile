@@ -2,7 +2,7 @@
 # Makefile for unitlib
 ##
 
-MSVC_COMPAT = -mno-cygwin -mms-bitfields
+MSVC_COMPAT = -mms-bitfields
 
 CC = gcc
 CFLAGS = -O2 -std=c99 -Wall -Wextra $(MSVC_COMPAT)
@@ -20,9 +20,13 @@ HEADER = unitlib-config.h unitlib.h
 SRCFILES = unitlib.c parser.c format.c
 HDRFILES = unitlib.h intern.h unitlib-config.h
 
-DLL_INSTALL = /c/Windows
-LIB_INSTALL = /g/Programmieren/lib
-HDR_INSTALL = /g/Programmieren/include
+WIN_DLL_INSTALL = /c/Windows
+WIN_LIB_INSTALL = /g/Programmieren/lib
+WIN_HDR_INSTALL = /g/Programmieren/include
+
+PREFIX = /usr
+INSTALL_LIB = $(PREFIX)/lib
+INSTALL_HDR = $(PREFIX)/include
 
 OBJFILES = unitlib.o parser.o format.o
 
@@ -38,10 +42,19 @@ all: $(TARGET)
 dll: $(DLL)
 
 install-dll: dll
-	cp $(DLL) $(DLL_INSTALL)
-	cp $(IMPLIB) $(LIB_INSTALL)
-	cp $(HEADER) $(HDR_INSTALL)
-
+	cp $(DLL) $(WIN_DLL_INSTALL)
+	cp $(IMPLIB) $(WIN_LIB_INSTALL)
+	cp $(HEADER) $(WIN_HDR_INSTALL)
+	
+install:
+	cp $(TARGET) $(INSTALL_LIB)
+	cp $(HEADER) $(INSTALL_HDR)
+	
+uninstall:
+	rm $(INSTALL_LIB)/$(TARGET)
+	cd $(INSTALL_HDR)
+	rm $(HEADER)
+	
 test: $(TESTPROG)
 	@./$(TESTPROG)
 	
