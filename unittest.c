@@ -198,6 +198,20 @@ TEST_SUITE(parser)
 			CHECK(ul_parse(expr, &u));
 		}
 	END_TEST
+
+	TEST
+		unit_t correct = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -1);
+
+		unit_t test;
+		CHECK(ul_parse("kg / s", &test));
+		FAIL_MSG("Error: %s", ul_error());
+
+		CHECK(ul_equal(&test, &correct));
+
+		correct.factor = 2.0;
+		CHECK(ul_parse("8 kg / 4 s", &test));
+		CHECK(ul_equal(&test, &correct));
+	END_TEST
 END_TEST_SUITE()
 
 TEST_SUITE(core)
@@ -217,6 +231,25 @@ TEST_SUITE(core)
 
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 		CHECK(!ul_equal(&kg, &N));
+	END_TEST
+
+	TEST
+		unit_t one_kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
+		unit_t five_kg = MAKE_UNIT(5.0, U_KILOGRAM, 1);
+
+		CHECK(!ul_equal(&one_kg, &five_kg));
+		CHECK(ul_cmp(&one_kg, &five_kg) == UL_SAME_UNIT);
+
+		unit_t five_sec = MAKE_UNIT(5.0, U_SECOND, 1);
+		CHECK(ul_cmp(&five_kg, &five_sec) == UL_SAME_FACTOR);
+
+		CHECK(ul_cmp(&one_kg, &five_sec) == UL_DIFFERENT);
+
+		CHECK(ul_cmp(NULL, &one_kg) == UL_ERROR);
+		CHECK(ul_cmp(&one_kg, NULL) == UL_ERROR);
+		CHECK(ul_cmp(NULL, NULL) == UL_ERROR);
+
+		/* UL_EQUAL result is tested by the previous test */
 	END_TEST
 
 	TEST
@@ -246,6 +279,18 @@ TEST_SUITE(core)
 
 		unit_t correct = MAKE_UNIT(6.0, U_KILOGRAM, 1, U_SECOND, -2);
 		CHECK(ul_equal(&res, &correct));
+	END_TEST
+
+	TEST
+		unit_t test = MAKE_UNIT(1.0, U_KILOGRAM, 1);
+
+		CHECK(ul_factor(&test) == 1.0);
+		CHECK(ul_mult(&test, 5.0));
+		CHECK(ul_factor(&test) == 5.0);
+		CHECK(ul_mult(&test, 1/5.0));
+		CHECK(ul_factor(&test) == 1.0);
+		CHECK(ul_mult(&test, -1));
+		CHECK(ul_factor(&test) == -1.0);
 	END_TEST
 END_TEST_SUITE()
 

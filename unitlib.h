@@ -52,7 +52,8 @@ typedef enum ul_format
 
 typedef enum ul_cmpres
 {
-	UL_ERROR       = 0x00,
+	UL_ERROR       = 0xFF,
+	UL_DIFFERENT   = 0x00,
 	UL_SAME_UNIT   = 0x01,
 	UL_SAME_FACTOR = 0x02,
 	UL_EQUAL       = 0x03,
