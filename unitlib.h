@@ -45,18 +45,19 @@ typedef enum base_unit
 
 typedef enum ul_format
 {
-	UL_FMT_PLAIN,
+	UL_FMT_PLAIN = 0,
 	UL_FMT_LATEX_FRAC,
 	UL_FMT_LATEX_INLINE,
+	UL_NUM_FORMATS,
 } ul_format_t;
 
 typedef enum ul_cmpres
 {
-	UL_ERROR       = 0xFF,
 	UL_DIFFERENT   = 0x00,
 	UL_SAME_UNIT   = 0x01,
 	UL_SAME_FACTOR = 0x02,
 	UL_EQUAL       = 0x03,
+	UL_ERROR       = 0xFF,
 } ul_cmpres_t;
 
 typedef struct unit

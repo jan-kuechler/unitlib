@@ -14,7 +14,21 @@ struct status
 	void         *extra;
 };
 
-typedef bool (*printer_t)(struct status*,int,int,bool*);
+struct printer;
+
+typedef bool (*print_all_f)(struct printer* p, struct status *stat);
+typedef bool (*print_fac_f)(struct status *stat, ul_number factor, bool *first);
+typedef bool (*print_sym_f)(struct status *stat, const char *sym, int exp, bool *first);
+
+struct printer
+{
+	print_sym_f sym;
+	print_fac_f fac;
+	print_all_f normal;
+	print_all_f reduce;
+	const char  *prefix;
+	const char  *postfix;
+};
 
 struct f_info
 {
@@ -121,6 +135,29 @@ static void getnexp(ul_number n, ul_number *mantissa, int *exp)
 void _ul_getnexp(ul_number n, ul_number *m, int *e)
 {
 	getnexp(n, m, e);
+}
+
+static bool p_plain_fac(struct status *stat, ul_number fac, bool *first)
+{
+	CHECK(_putn(stat, fac));
+	*first = true;
+	return true;
+}
+
+static bool p_plain_sym(struct status *stat, const char *sym, int exp, bool *first)
+{
+	if (!exp)
+		return true;
+
+	if (!*first)
+		CHECK(_putc(stat, ' '));
+
+	CHECK(_puts(stat, sym));
+	if (exp != 1) {
+		CHECK(_putc(stat, '^'));
+		CHECK(_putd(stat, exp));
+	}
+	return true;
 }
 
 // Begin - plain
@@ -264,22 +301,68 @@ static bool p_latex_inline(struct status *stat)
 }
 // End - LaTeX
 
+static bool def_normal(struct printer *p, struct status *stat)
+{
+	if (p->prefix)
+		CHECK(_puts(stat, p->prefix));
+
+	bool first = true;
+
+	CHECK(p->fac(stat, stat->unit->factor, &first));
+
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
+		CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
+	}
+
+	if (p->postfix)
+		CHECK(_puts(stat, p->postfix));
+
+	return true;
+}
+
+static bool def_reduce(struct printer *p, struct status *stat)
+{
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+static struct printer printer[UL_NUM_FORMATS] = {
+	[UL_FMT_PLAIN] = {
+		.sym = p_plain_sym,
+		.fac = p_plain_fac,
+		.normal = def_normal,
+		.reduce = def_reduce,
+		.prefix = NULL,
+		.postfix = NULL,
+	},
+	[UL_FMT_LATEX_INLINE] = {
+		.sym = p_latex_sym,
+		.fac = p_latex_fac,
+		.normal = def_normal,
+		.reduce = def_reduce,
+		.prefix = "$",
+		.postfix = "$",
+	},
+	[UL_FMT_LATEX_frac] = {
+		.sym = p_latex_sym,
+		.fac = p_latex_fac,
+		.normal = p_lfrac,
+		.reduce = def_reduce,
+		.prefix = "$",
+		.postfix = "$",
+	},
+};
+
 static bool _print(struct status *stat)
 {
-	switch (stat->format) {
-	case UL_FMT_PLAIN:
-		return p_plain(stat);
-
-	case UL_FMT_LATEX_FRAC:
-		return p_latex_frac(stat);
-
-	case UL_FMT_LATEX_INLINE:
-		return p_latex_inline(stat);
-
-	default:
-		ERROR("Unknown format: %d", stat->format);
+	if (stat->format >= UL_NUM_FORMATS) {
+		ERROR("Invalid format: %d\n", stat->format);
 		return false;
 	}
+
+	struct printer *p = &printer[stat->format];
+
+	return p->normal(p, stat);
 }
 
 UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format)
