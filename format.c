@@ -137,10 +137,49 @@ void _ul_getnexp(ul_number n, ul_number *m, int *e)
 	getnexp(n, m, e);
 }
 
+static bool p_lfrac(struct printer *p, struct status *stat)
+{
+	if (p->prefix)
+		CHECK(_puts(stat, p->prefix));
+
+	bool first = true;
+
+	CHECK(_puts(stat, "\\frac{"));
+	if (_fabsn(stat->unit->factor) >= 1)
+		CHECK(p->fac(stat, stat->unit->factor, &first));
+
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
+		if (stat->unit->exps[i] > 0)
+			CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
+	}
+	if (first)
+		CHECK(p->fac(stat, 1.0, &first));
+
+	CHECK(_puts(stat, "}{"));
+	first = true;
+	if (_fabsn(stat->unit->factor) < 1)
+		CHECK(p->fac(stat, stat->unit->factor, &first));
+	for (int i=0; i < NUM_BASE_UNITS; ++i) {
+		if (stat->unit->exps[i] < 0)
+			CHECK(p->sym(stat, _ul_symbols[i], -stat->unit->exps[i], &first));
+	}
+	if (first)
+		CHECK(p->fac(stat, 1.0, &first));
+
+	CHECK(_putc(stat, '}'));
+
+	if (p->postfix)
+		CHECK(_puts(stat, p->postfix));
+
+	return true;
+}
+
 static bool p_plain_fac(struct status *stat, ul_number fac, bool *first)
 {
+	if (!*first)
+		CHECK(_putc(stat, ' '));
 	CHECK(_putn(stat, fac));
-	*first = true;
+	*first = false;
 	return true;
 }
 
@@ -157,60 +196,37 @@ static bool p_plain_sym(struct status *stat, const char *sym, int exp, bool *fir
 		CHECK(_putc(stat, '^'));
 		CHECK(_putd(stat, exp));
 	}
+	*first = false;
 	return true;
 }
 
-// Begin - plain
-static bool print_one_plain(struct status* stat, int unit, int exp)
+static bool p_latex_fac(struct status *stat, ul_number fac, bool *first)
 {
-	if (exp == 0)
-		return true;
+	ul_number m; int e;
+	getnexp(fac, &m, &e);
 
-	CHECK(_putc(stat, ' '));
-	CHECK(_puts(stat, _ul_symbols[unit]));
-	// and the exponent
-	if (exp != 1) {
-		CHECK(_putc(stat, '^'));
-		CHECK(_putd(stat, exp));
+	if (!*first)
+		CHECK(_putc(stat, ' '));
+	CHECK(_putn(stat, m));
+	if (e != 0) {
+		CHECK(_puts(stat, " \\cdot 10^{"));
+		CHECK(_putd(stat, e));
+		CHECK(_putc(stat, '}'));
 	}
+	*first = false;
 	return true;
 }
 
-static bool p_plain(struct status *stat)
+static bool p_latex_sym(struct status *stat, const char *sym, int exp, bool *first)
 {
-	CHECK(_putn(stat, stat->unit->factor));
-
-	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		CHECK(print_one_plain(stat,i,stat->unit->exps[i]));
-	}
-
-	return true;
-}
-// End - plain
-
-// Begin - LaTeX
-static bool print_one_latex(struct status *stat, int unit, int exp, bool *first)
-{
-	if (exp == 0)
-		return true;
-	if (stat->extra) {
-		bool pos = *(bool*)stat->extra;
-		if (exp > 0 && !pos)
-			return true;
-		if (exp < 0) {
-			if (pos)
-				return true;
-			exp = -exp;
-		}
-	}
-	if (!first || !*first)
+	if (!*first)
 		CHECK(_putc(stat, ' '));
 
 	CHECK(_puts(stat, "\\text{"));
-	if (!first || !*first)
+	if (!*first)
 		CHECK(_putc(stat, ' '));
 
-	CHECK(_puts(stat, _ul_symbols[unit]));
+	CHECK(_puts(stat, sym));
 	CHECK(_puts(stat, "}"));
 	if (exp != 1) {
 		CHECK(_putc(stat, '^'));
@@ -223,84 +239,6 @@ static bool print_one_latex(struct status *stat, int unit, int exp, bool *first)
 	return true;
 }
 
-static bool p_latex_frac(struct status *stat)
-{
-	bool first = true;
-	bool positive = true;
-	stat->extra = &positive;
-
-	ul_number m; int e;
-	getnexp(stat->unit->factor, &m, &e);
-
-	CHECK(_puts(stat, "\\frac{"));
-
-	// upper side of the fraction
-	if (e >= 0) {
-		// print factors |x| > 1
-		CHECK(_putn(stat, m));
-		if (e > 0) {
-			CHECK(_puts(stat, " \\cdot 10^{"));
-			CHECK(_putd(stat, e));
-			CHECK(_putc(stat, '}'));
-		}
-		first = false;
-	}
-	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		CHECK(print_one_latex(stat,i,stat->unit->exps[i], &first));
-	}
-	if (first) { // nothing up there...
-		CHECK(_putc(stat, '1'));
-	}
-	CHECK(_puts(stat, "}{"));
-
-	// lower side
-	first = true;
-	positive = false;
-	if (e < 0) {
-		// print factors |x| < 1
-		e = -e;
-		CHECK(_putn(stat, m));
-		if (e > 0) {
-			CHECK(_puts(stat, " \\cdot 10^{"));
-			CHECK(_putd(stat, e));
-			CHECK(_putc(stat, '}'));
-		}
-		first = false;
-	}
-	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		CHECK(print_one_latex(stat,i,stat->unit->exps[i], &first));
-	}
-	if (first) {
-		CHECK(_putc(stat, '1'));
-	}
-	CHECK(_putc(stat, '}'));
-	return true;
-}
-
-static bool p_latex_inline(struct status *stat)
-{
-	CHECK(_putc(stat, '$'));
-
-	ul_number m; int e;
-	getnexp(stat->unit->factor, &m, &e);
-	CHECK(_putn(stat, m));
-	if (e != 0) {
-		CHECK(_puts(stat, " \\cdot 10^{"));
-		CHECK(_putd(stat, e));
-		CHECK(_putc(stat, '}'));
-	}
-
-	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		int exp = stat->unit->exps[i];
-		if (exp != 0) {
-			CHECK(print_one_latex(stat, i, exp, NULL));
-		}
-	}
-	CHECK(_putc(stat, '$'));
-	return true;
-}
-// End - LaTeX
-
 static bool def_normal(struct printer *p, struct status *stat)
 {
 	if (p->prefix)
@@ -311,7 +249,8 @@ static bool def_normal(struct printer *p, struct status *stat)
 	CHECK(p->fac(stat, stat->unit->factor, &first));
 
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
-		CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
+		if (stat->unit->exps[i] != 0)
+			CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
 	}
 
 	if (p->postfix)
@@ -325,7 +264,6 @@ static bool def_reduce(struct printer *p, struct status *stat)
 	return false;
 }
 
-//-----------------------------------------------------------------------------
 static struct printer printer[UL_NUM_FORMATS] = {
 	[UL_FMT_PLAIN] = {
 		.sym = p_plain_sym,
@@ -343,7 +281,7 @@ static struct printer printer[UL_NUM_FORMATS] = {
 		.prefix = "$",
 		.postfix = "$",
 	},
-	[UL_FMT_LATEX_frac] = {
+	[UL_FMT_LATEX_FRAC] = {
 		.sym = p_latex_sym,
 		.fac = p_latex_fac,
 		.normal = p_lfrac,
@@ -361,7 +299,6 @@ static bool _print(struct status *stat)
 	}
 
 	struct printer *p = &printer[stat->format];
-
 	return p->normal(p, stat);
 }
 

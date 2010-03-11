@@ -419,7 +419,7 @@ TEST_SUITE(format)
 		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC));
 		FAIL_MSG("Error: %s", ul_error());
 
-		CHECK(strcmp(buffer, "\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}") == 0);
+		CHECK(strcmp(buffer, "$\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
 		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC) == strlen(buffer));
