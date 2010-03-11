@@ -22,22 +22,14 @@ int main(void)
 		printf("Error: %s\n", ul_error());
 	}
 
-
-	ul_fmtops_t fmtop;
-	fmtop.sort = true;
-	fmtop.order[0] = U_LEMMING;
-	fmtop.order[1] = U_KILOGRAM;
-	fmtop.order[2] = U_METER;
-	fmtop.order[3] = U_ANY;
-
 	printf("0.2 N^2 * 0.75 m^-1 = ");
-	if (!ul_fprint(stdout, &unit, UL_FMT_PLAIN, &fmtop)) {
+	if (!ul_fprint(stdout, &unit, UL_FMT_PLAIN, 0)) {
 		printf("Error: %s\n", ul_error());
 	}
 	printf("\n");
 
 	char buffer[1024];
-	if (!ul_snprint(buffer, 1024, &unit, UL_FMT_PLAIN, NULL)) {
+	if (!ul_snprint(buffer, 1024, &unit, UL_FMT_PLAIN, 0)) {
 		printf("Error: %s\n", ul_error());
 	}
 	printf("snprint => '%s'\n", buffer);
@@ -46,24 +38,23 @@ int main(void)
 	{
 		printf("\n----------\n");
 
-		fmtop.order[2] = U_ANY;
 		unit_t n;
 		ul_parse("N", &n);
 		printf("1 N = ");
-		ul_print(&n, UL_FMT_PLAIN, &fmtop);
+		ul_print(&n, UL_FMT_PLAIN, UL_FOP_REDUCE);
 		printf("\n----------\n\n");
 	}
 
-	ul_print( &unit, UL_FMT_LATEX_FRAC, &fmtop);
+	ul_print( &unit, UL_FMT_LATEX_FRAC, 0);
 	printf("\n");
-	ul_print(&unit, UL_FMT_LATEX_INLINE, NULL);
+	ul_print(&unit, UL_FMT_LATEX_INLINE, 0);
 	printf("\n");
 
 	{
 		unit_t unit;
 		ul_parse("s^-1", &unit);
 		printf("LaTeX: ");
-		ul_print(&unit, UL_FMT_LATEX_FRAC, NULL);
+		ul_print(&unit, UL_FMT_LATEX_FRAC, 0);
 		printf("\n");
 	}
 
@@ -74,7 +65,7 @@ int main(void)
 			printf("%s\n", ul_error());
 
 		printf("%s = ", u);
-		ul_print(&unit, UL_FMT_PLAIN, NULL);
+		ul_print(&unit, UL_FMT_PLAIN, 0);
 		printf("\n");
 	}
 

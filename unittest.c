@@ -360,77 +360,77 @@ TEST_SUITE(format)
 		unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 
 		kg.factor = 1.5;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1.5 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 
 		kg.factor = -1.0;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "-1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "1 m kg s^-2") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_PLAIN));
+		CHECK(ul_length(&N, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_PLAIN, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "$1 \\text{ m} \\text{ kg} \\text{ s}^{-2}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_LATEX_INLINE) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_INLINE));
+		CHECK(ul_length(&N, UL_FMT_LATEX_INLINE, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_INLINE, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "$\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_FRAC));
+		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_FRAC, 0));
 	END_TEST
 
 	TEST
 		unit_t zeroKg = MAKE_UNIT(0.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN));
+		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "0 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);

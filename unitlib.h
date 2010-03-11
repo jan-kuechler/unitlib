@@ -60,6 +60,11 @@ typedef enum ul_cmpres
 	UL_ERROR       = 0xFF,
 } ul_cmpres_t;
 
+enum ul_fmtop
+{
+	UL_FOP_REDUCE = 0x01,
+};
+
 typedef struct unit
 {
 	int exps[NUM_BASE_UNITS];
@@ -206,21 +211,21 @@ UL_API bool ul_sqrt(unit_t *unit);
  * @param file   The file
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, int fops);
 
 /**
  * Prints the unit to stdout according to the format
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format)
+static inline bool ul_print(const unit_t *unit, ul_format_t format, int fops)
 {
-	return ul_fprint(stdout, unit, format);
+	return ul_fprint(stdout, unit, format, fops);
 }
 
 /**
@@ -229,17 +234,18 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format)
  * @param buflen Length of the buffer
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, int fops);
 
 /**
  * Returns the length of the formated unit
  * @param unit   The unit
  * @param format Format option
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return Length of the formated string
  */
-UL_API size_t ul_length(const unit_t *unit, ul_format_t format);
+UL_API size_t ul_length(const unit_t *unit, ul_format_t format, int fops);
 
 #endif /*UNITLIB_H*/

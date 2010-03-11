@@ -495,6 +495,15 @@ UL_API bool ul_load_rules(const char *path)
 	return ok;
 }
 
+UL_LINKAGE const char *_ul_reduce(const unit_t *unit)
+{
+	for (rule_t *cur = rules; cur; cur = cur->next) {
+		if (ul_cmp(&cur->unit, unit) & UL_SAME_UNIT)
+			return cur->symbol;
+	}
+	return NULL;
+}
+
 static bool init_prefixes(void)
 {
 	debug("Initializing prefixes");

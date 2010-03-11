@@ -14,9 +14,16 @@ struct status
 	void         *extra;
 };
 
+enum result
+{
+	R_ERROR = 0,
+	R_FAIL,
+	R_OK,
+};
+
 struct printer;
 
-typedef bool (*print_all_f)(struct printer* p, struct status *stat);
+typedef enum result (*print_all_f)(struct printer* p, struct status *stat);
 typedef bool (*print_fac_f)(struct status *stat, ul_number factor, bool *first);
 typedef bool (*print_sym_f)(struct status *stat, const char *sym, int exp, bool *first);
 
@@ -74,6 +81,8 @@ static bool cnt_putc(char c, void *i)
 #define _putc(s,c) (s)->put_char((c),(s)->info)
 
 #define CHECK(x) do { if (!(x)) return false; } while (0)
+
+#define CHECK_R(x) do { if (!(x)) return R_ERROR; } while (0)
 
 static bool _puts(struct status *s, const char *str)
 {
@@ -137,41 +146,41 @@ void _ul_getnexp(ul_number n, ul_number *m, int *e)
 	getnexp(n, m, e);
 }
 
-static bool p_lfrac(struct printer *p, struct status *stat)
+static enum result p_lfrac(struct printer *p, struct status *stat)
 {
 	if (p->prefix)
-		CHECK(_puts(stat, p->prefix));
+		CHECK_R(_puts(stat, p->prefix));
 
 	bool first = true;
 
-	CHECK(_puts(stat, "\\frac{"));
+	CHECK_R(_puts(stat, "\\frac{"));
 	if (_fabsn(stat->unit->factor) >= 1)
-		CHECK(p->fac(stat, stat->unit->factor, &first));
+		CHECK_R(p->fac(stat, stat->unit->factor, &first));
 
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if (stat->unit->exps[i] > 0)
-			CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
+			CHECK_R(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
 	}
 	if (first)
-		CHECK(p->fac(stat, 1.0, &first));
+		CHECK_R(p->fac(stat, 1.0, &first));
 
-	CHECK(_puts(stat, "}{"));
+	CHECK_R(_puts(stat, "}{"));
 	first = true;
 	if (_fabsn(stat->unit->factor) < 1)
-		CHECK(p->fac(stat, stat->unit->factor, &first));
+		CHECK_R(p->fac(stat, stat->unit->factor, &first));
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if (stat->unit->exps[i] < 0)
-			CHECK(p->sym(stat, _ul_symbols[i], -stat->unit->exps[i], &first));
+			CHECK_R(p->sym(stat, _ul_symbols[i], -stat->unit->exps[i], &first));
 	}
 	if (first)
-		CHECK(p->fac(stat, 1.0, &first));
+		CHECK_R(p->fac(stat, 1.0, &first));
 
-	CHECK(_putc(stat, '}'));
+	CHECK_R(_putc(stat, '}'));
 
 	if (p->postfix)
-		CHECK(_puts(stat, p->postfix));
+		CHECK_R(_puts(stat, p->postfix));
 
-	return true;
+	return R_OK;
 }
 
 static bool p_plain_fac(struct status *stat, ul_number fac, bool *first)
@@ -239,29 +248,43 @@ static bool p_latex_sym(struct status *stat, const char *sym, int exp, bool *fir
 	return true;
 }
 
-static bool def_normal(struct printer *p, struct status *stat)
+static enum result def_normal(struct printer *p, struct status *stat)
 {
 	if (p->prefix)
-		CHECK(_puts(stat, p->prefix));
+		CHECK_R(_puts(stat, p->prefix));
 
 	bool first = true;
 
-	CHECK(p->fac(stat, stat->unit->factor, &first));
+	CHECK_R(p->fac(stat, stat->unit->factor, &first));
 
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
 		if (stat->unit->exps[i] != 0)
-			CHECK(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
+			CHECK_R(p->sym(stat, _ul_symbols[i], stat->unit->exps[i], &first));
 	}
 
 	if (p->postfix)
-		CHECK(_puts(stat, p->postfix));
+		CHECK_R(_puts(stat, p->postfix));
 
-	return true;
+	return R_OK;
 }
 
-static bool def_reduce(struct printer *p, struct status *stat)
+static enum result def_reduce(struct printer *p, struct status *stat)
 {
-	return false;
+	const char *sym = _ul_reduce(stat->unit);
+	if (!sym)
+		return R_FAIL;
+
+	if (p->prefix)
+		CHECK_R(_puts(stat, p->prefix));
+
+	bool first = true;
+	CHECK_R(p->fac(stat, stat->unit->factor, &first));
+	CHECK_R(p->sym(stat, sym, 1, &first));
+
+	if (p->postfix)
+		CHECK_R(_puts(stat, p->postfix));
+
+	return R_OK;
 }
 
 static struct printer printer[UL_NUM_FORMATS] = {
@@ -291,7 +314,7 @@ static struct printer printer[UL_NUM_FORMATS] = {
 	},
 };
 
-static bool _print(struct status *stat)
+static bool _print(struct status *stat, int opts)
 {
 	if (stat->format >= UL_NUM_FORMATS) {
 		ERROR("Invalid format: %d\n", stat->format);
@@ -299,10 +322,19 @@ static bool _print(struct status *stat)
 	}
 
 	struct printer *p = &printer[stat->format];
-	return p->normal(p, stat);
+
+	print_all_f f = p->normal;
+	if (opts & UL_FOP_REDUCE) {
+		f = p->reduce;
+	}
+
+	enum result res = f(p, stat);
+	if (res == R_FAIL)
+		res = p->normal(p, stat);
+	return res == R_OK;
 }
 
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format)
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, int fops)
 {
 	struct f_info info = {
 		.out = f,
@@ -316,10 +348,10 @@ UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format)
 		.extra  = NULL,
 	};
 
-	return _print(&status);
+	return _print(&status, fops);
 }
 
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format)
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, int fops)
 {
 	struct sn_info info = {
 		.buffer = buffer,
@@ -337,10 +369,10 @@ UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_forma
 
 	memset(buffer, 0, buflen);
 
-	return _print(&status);
+	return _print(&status, fops);
 }
 
-UL_API size_t ul_length(const unit_t *unit, ul_format_t format)
+UL_API size_t ul_length(const unit_t *unit, ul_format_t format, int fops)
 {
 	struct cnt_info info = {0};
 
@@ -352,6 +384,6 @@ UL_API size_t ul_length(const unit_t *unit, ul_format_t format)
 		.extra  = NULL,
 	};
 
-	_print(&status);
+	_print(&status, fops);
 	return info.count;
 }
