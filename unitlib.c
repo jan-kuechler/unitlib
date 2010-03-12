@@ -166,15 +166,6 @@ UL_API bool ul_init(void)
 	if (!_ul_init_rules())
 		return false;
 
-	const char *rulePath = getenv("UL_RULES");
-	if (rulePath) {
-		debug("UL_RULES is set: %s", rulePath);
-		if (!ul_load_rules(rulePath)) {
-			ERROR("Failed to load rules: %s", errmsg);
-			return false;
-		}
-	}
-
 	return true;
 }
 
