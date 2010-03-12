@@ -504,6 +504,48 @@ UL_LINKAGE const char *_ul_reduce(const unit_t *unit)
 	return NULL;
 }
 
+static bool kilogram_hack(void)
+{
+	// stupid inconsistend SI system...
+	unit_t gram = {
+		{[U_KILOGRAM] = 1},
+		1e-3,
+	};
+	if (!add_rule("g", &gram, true))
+		return false;
+	return true;
+}
+
+static void free_rules(void)
+{
+	rule_t *cur = dynamic_rules;
+	while (cur) {
+		rule_t *next = cur->next;
+		free((char*)cur->symbol);
+		free(cur);
+		cur = next;
+	}
+	dynamic_rules = NULL;
+}
+
+static void free_prefixes(void)
+{
+	prefix_t *pref = prefixes;
+	while (pref) {
+		prefix_t *next = pref->next;
+		free(pref);
+		pref = next;
+	}
+	prefixes = NULL;
+}
+
+UL_API bool ul_reset_rules(void)
+{
+	free_rules();
+	kilogram_hack();
+	return true;
+}
+
 static bool init_prefixes(void)
 {
 	debug("Initializing prefixes");
@@ -549,13 +591,7 @@ UL_LINKAGE bool _ul_init_parser(void)
 	rules = base_rules;
 	debug("Base rules initialized");
 
-	// stupid inconsistend SI system...
-	unit_t gram = {
-		{[U_KILOGRAM] = 1},
-		1e-3,
-	};
-	debug("Adding gram");
-	if (!add_rule("g", &gram, true))
+	if (!kilogram_hack())
 		return false;
 
 	if (!init_prefixes())
@@ -567,19 +603,6 @@ UL_LINKAGE bool _ul_init_parser(void)
 
 UL_LINKAGE void _ul_free_rules(void)
 {
-	debug("Freeing rule list");
-	rule_t *cur = dynamic_rules;
-	while (cur) {
-		rule_t *next = cur->next;
-		free((char*)cur->symbol);
-		free(cur);
-		cur = next;
-	}
-
-	prefix_t *pref = prefixes;
-	while (pref) {
-		prefix_t *next = pref->next;
-		free(pref);
-		pref = next;
-	}
+	free_rules();
+	free_prefixes();
 }

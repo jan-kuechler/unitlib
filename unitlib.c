@@ -129,6 +129,15 @@ UL_API bool ul_sqrt(unit_t *unit)
 	return false;
 }
 
+UL_API bool ul_reduceable(const unit_t *unit)
+{
+	if (!unit) {
+		ERROR("Invalid parameter");
+		return false;
+	}
+	return _ul_reduce(unit) != NULL;
+}
+
 UL_API void ul_debugging(bool flag)
 {
 	_ul_debugging = flag;

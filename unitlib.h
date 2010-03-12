@@ -207,6 +207,13 @@ UL_API bool ul_inverse(unit_t *unit);
 UL_API bool ul_sqrt(unit_t *unit);
 
 /**
+ * Checks whether a unit is reduceable to a composed unit
+ * @param unit The unit
+ * @return True if the unit is reduceable, false if not or if an error occured
+ */
+UL_API bool ul_reduceable(const unit_t *unit);
+
+/**
  * Prints the unit to a file according to the format
  * @param file   The file
  * @param unit   The unit
