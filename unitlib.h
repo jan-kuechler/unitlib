@@ -11,7 +11,7 @@
 #include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
-#define UL_VERSION   "0.4b1"
+#define UL_VERSION   "0.4b2"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
 #ifdef __cplusplus
@@ -21,9 +21,9 @@
 #endif
 
 #if defined(UL_EXPORT_DLL)
-#define UL_API UL_LINKAGE __declspec(dllexport)
+#define UL_API UL_LINKAGE __declspec(dllexport) __stdcall
 #elif defined(UL_IMPORT_DLL)
-#define UL_API UL_LINKAGE __declspec(dllimport)
+#define UL_API UL_LINKAGE __declspec(dllimport) __stdcall
 #else
 #define UL_API UL_LINKAGE
 #endif
@@ -96,6 +96,18 @@ UL_API void ul_debugging(bool flag);
  * @param out The outstream
  */
 UL_API void ul_debugout(const char *path, bool append);
+
+/**
+ * Returns the full name of unitlib, including the version
+ * @return String in the form "unitlib-x.yz"
+ */
+UL_API const char *ul_get_name(void);
+
+/**
+ * Returns the version of unitlib
+ * @return String in the form "x.yz"
+ */
+UL_API const char *ul_get_version(void);
 
 /**
  * Returns the last error message

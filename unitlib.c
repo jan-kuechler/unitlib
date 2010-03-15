@@ -157,6 +157,16 @@ UL_API const char *ul_error(void)
 	return errmsg;
 }
 
+UL_API const char *ul_get_name(void)
+{
+	return UL_FULL_NAME;
+}
+
+UL_API const char *ul_get_version(void)
+{
+	return UL_VERSION;
+}
+
 UL_API bool ul_init(void)
 {
 	if(!dbg_out)

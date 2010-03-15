@@ -2,10 +2,10 @@
 # Makefile for unitlib
 ##
 
-MSVC_COMPAT = -mms-bitfields
+MSVC_COMPAT = -mms-bitfields -mno-cygwin
 
 CC = gcc
-CFLAGS = -O2 -std=c99 -Wall -Wextra $(MSVC_COMPAT)
+CFLAGS = -O2 -std=c99 -Wall -Wextra
 
 AR = ar
 RANLIB = ranlib
@@ -68,8 +68,8 @@ $(TARGET): $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
 	@$(RANLIB) $(TARGET)
 	
-$(DLL): $(SRCFILES) $(HDRFILES)
-	@$(CC) $(CFLAGS) -shared -o $(DLL) $(SRCFILES) -Wl,--out-implib,$(IMPLIB)
+$(DLL): $(SRCFILES) $(HDRFILES) Makefile
+	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--out-implib,$(IMPLIB)
 	
 unitlib.o: unitlib.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c
