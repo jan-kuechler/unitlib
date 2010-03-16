@@ -497,6 +497,7 @@ UL_API bool ul_load_rules(const char *path)
 
 static bool init_prefixes(void)
 {
+	debug("Initializing prefixes");
 	if (!add_prefix('Y', 1e24))  return false;
 	if (!add_prefix('Z', 1e21))  return false; //zetta
 	if (!add_prefix('E', 1e18))  return false; //exa
@@ -518,12 +519,15 @@ static bool init_prefixes(void)
 	if (!add_prefix('z', 1e-21)) return false; // zepto
 	if (!add_prefix('y', 1e-24)) return false; // yocto
 
+	debug("Prefixes initialized!");
 	return true;
 }
 
-UL_LINKAGE bool _ul_init_rules(void)
+UL_LINKAGE bool _ul_init_parser(void)
 {
+	debug("Initializing parser");
 	for (int i=0; i < NUM_BASE_UNITS; ++i) {
+		debug("Base rule: %d", i);
 		base_rules[i].symbol = _ul_symbols[i];
 
 		init_unit(&base_rules[i].unit);
@@ -534,17 +538,21 @@ UL_LINKAGE bool _ul_init_rules(void)
 	}
 	dynamic_rules = NULL;
 	rules = base_rules;
+	debug("Base rules initialized");
 
 	// stupid inconsistend SI system...
 	unit_t gram = {
 		{[U_KILOGRAM] = 1},
 		1e-3,
 	};
+	debug("Adding gram");
 	if (!add_rule("g", &gram, true))
 		return false;
 
 	if (!init_prefixes())
 		return false;
+
+	debug("Parser initalized!");
 	return true;
 }
 

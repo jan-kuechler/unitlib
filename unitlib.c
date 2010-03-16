@@ -149,7 +149,9 @@ UL_API void ul_debugout(const char *path, bool append)
 			dbg_out = stderr;
 			debug("Failed to open '%s' as debugout, using stderr.", path);
 		}
+		setvbuf(dbg_out, NULL, _IONBF, 0);
 	}
+	fprintf(dbg_out, "** unitlib - debug log **\n");
 }
 
 UL_API const char *ul_error(void)
@@ -172,10 +174,13 @@ UL_API bool ul_init(void)
 	if(!dbg_out)
 		dbg_out = stderr;
 
-	debug("Initializing base rules");
-	if (!_ul_init_rules())
-		return false;
+	debug("Initializing unitlib....");
 
+	if (!_ul_init_parser()) {
+		return false;
+	}
+
+	debug("Init done!");
 	return true;
 }
 
