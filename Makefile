@@ -43,6 +43,7 @@ dll: $(DLL)
 
 install-dll: dll
 	cp $(DLL) $(WIN_DLL_INSTALL)
+	cp $(DLL) $(WIN_LIB_INSTALL)
 	cp $(IMPLIB) $(WIN_LIB_INSTALL)
 	cp $(HEADER) $(WIN_HDR_INSTALL)
 	
@@ -69,7 +70,8 @@ $(TARGET): $(OBJFILES)
 	@$(RANLIB) $(TARGET)
 	
 $(DLL): $(SRCFILES) $(HDRFILES) Makefile
-	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--out-implib,$(IMPLIB)
+	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--output-def,libunit.def
+	lib.exe /DEF:libunit.def /OUT:libunit.lib /MACHINE:X86
 	
 unitlib.o: unitlib.c $(HDRFILES)
 	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c
@@ -100,3 +102,5 @@ allclean: clean
 	@rm -f $(TARGET)
 	@rm -f $(DLL)
 	@rm -f $(IMPLIB)
+	@rm -f libunit.def
+	@rm -f libunit.exp
