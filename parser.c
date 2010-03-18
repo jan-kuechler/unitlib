@@ -7,6 +7,9 @@
 #include "intern.h"
 #include "unitlib.h"
 
+// My string.h is missing strdup so place it here.
+char *strdup(const char *s1);
+
 typedef struct rule
 {
 	const char *symbol;
@@ -511,7 +514,7 @@ static bool kilogram_hack(void)
 		{[U_KILOGRAM] = 1},
 		1e-3,
 	};
-	if (!add_rule("g", &gram, true))
+	if (!add_rule(strdup("g"), &gram, true)) // strdup because add_rule expects malloc'd memory (it gets free'd at ul_quit).
 		return false;
 	return true;
 }
