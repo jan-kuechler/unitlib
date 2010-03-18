@@ -16,9 +16,9 @@ struct status
 
 enum result
 {
-	R_ERROR = 0,
-	R_FAIL,
-	R_OK,
+	RES_ERROR = 0,
+	RES_FAIL,
+	RES_OK,
 };
 
 struct printer;
@@ -82,7 +82,7 @@ static bool cnt_putc(char c, void *i)
 
 #define CHECK(x) do { if (!(x)) return false; } while (0)
 
-#define CHECK_R(x) do { if (!(x)) return R_ERROR; } while (0)
+#define CHECK_R(x) do { if (!(x)) return RES_ERROR; } while (0)
 
 static bool _puts(struct status *s, const char *str)
 {
@@ -180,7 +180,7 @@ static enum result p_lfrac(struct printer *p, struct status *stat)
 	if (p->postfix)
 		CHECK_R(_puts(stat, p->postfix));
 
-	return R_OK;
+	return RES_OK;
 }
 
 static bool p_plain_fac(struct status *stat, ul_number fac, bool *first)
@@ -265,14 +265,14 @@ static enum result def_normal(struct printer *p, struct status *stat)
 	if (p->postfix)
 		CHECK_R(_puts(stat, p->postfix));
 
-	return R_OK;
+	return RES_OK;
 }
 
 static enum result def_reduce(struct printer *p, struct status *stat)
 {
 	const char *sym = _ul_reduce(stat->unit);
 	if (!sym)
-		return R_FAIL;
+		return RES_FAIL;
 
 	if (p->prefix)
 		CHECK_R(_puts(stat, p->prefix));
@@ -284,7 +284,7 @@ static enum result def_reduce(struct printer *p, struct status *stat)
 	if (p->postfix)
 		CHECK_R(_puts(stat, p->postfix));
 
-	return R_OK;
+	return RES_OK;
 }
 
 static struct printer printer[UL_NUM_FORMATS] = {
@@ -329,9 +329,9 @@ static bool _print(struct status *stat, int opts)
 	}
 
 	enum result res = f(p, stat);
-	if (res == R_FAIL)
+	if (res == RES_FAIL)
 		res = p->normal(p, stat);
-	return res == R_OK;
+	return res == RES_OK;
 }
 
 UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, int fops)
