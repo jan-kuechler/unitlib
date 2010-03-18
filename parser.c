@@ -514,7 +514,7 @@ static bool kilogram_hack(void)
 		{[U_KILOGRAM] = 1},
 		1e-3,
 	};
-	if (!add_rule(strdup("g"), &gram, true)) // strdup because add_rule expects malloc'd memory (it gets free'd at ul_quit).
+	if (!add_rule(strdup("g"), &gram, true)) // strdup because add_rule expects malloc'd memory (it gets free'd at ul_quit)
 		return false;
 	return true;
 }
@@ -553,20 +553,20 @@ static bool init_prefixes(void)
 {
 	debug("Initializing prefixes");
 	if (!add_prefix('Y', 1e24))  return false;
-	if (!add_prefix('Z', 1e21))  return false; //zetta
-	if (!add_prefix('E', 1e18))  return false; //exa
-	if (!add_prefix('P', 1e15))  return false; //peta
-	if (!add_prefix('T', 1e12))  return false; //tera
+	if (!add_prefix('Z', 1e21))  return false; // zetta
+	if (!add_prefix('E', 1e18))  return false; // exa
+	if (!add_prefix('P', 1e15))  return false; // peta
+	if (!add_prefix('T', 1e12))  return false; // tera
 	if (!add_prefix('G', 1e9))   return false; // giga
 	if (!add_prefix('M', 1e6))   return false; // mega
 	if (!add_prefix('k', 1e3))   return false; // kilo
 	if (!add_prefix('h', 1e2))   return false; // hecto
 	// missing: da - deca
-	if (!add_prefix('d', 1e-1))  return false; //deci
-	if (!add_prefix('c', 1e-2))  return false; //centi
-	if (!add_prefix('m', 1e-3))  return false; //milli
-	if (!add_prefix('u', 1e-6))  return false; //micro
-	if (!add_prefix('n', 1e-9))  return false; //nano
+	if (!add_prefix('d', 1e-1))  return false; // deci
+	if (!add_prefix('c', 1e-2))  return false; // centi
+	if (!add_prefix('m', 1e-3))  return false; // milli
+	if (!add_prefix('u', 1e-6))  return false; // micro
+	if (!add_prefix('n', 1e-9))  return false; // nano
 	if (!add_prefix('p', 1e-12)) return false; // pico
 	if (!add_prefix('f', 1e-15)) return false; // femto
 	if (!add_prefix('a', 1e-18)) return false; // atto
