@@ -106,6 +106,15 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
+static size_t nextsplit(const char *text, size_t start)
+{
+	assert(text);
+	size_t i = start;
+	while (text[i] && !(isspace(text[i]) || text[i] == '*'))
+		i++;
+	return i;
+}
+
 static bool try_parse_factor(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit); assert(state);
