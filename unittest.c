@@ -432,7 +432,7 @@ TEST_SUITE(format)
 		FAIL_MSG("buffer: '%s'", buffer);
 
 		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC, 0) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_FRAC, 0));
+		FAIL_MSG("ul_length: %zu", ul_length(&N, UL_FMT_LATEX_FRAC, 0));
 	END_TEST
 
 	TEST
