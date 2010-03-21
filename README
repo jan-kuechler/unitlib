@@ -1,0 +1,50 @@
+
+                               unitlib - README
+
++ What is unitlib?
+
+Unitlib is a programming library written in C, that handles parsing, converting
+and formatting of SI units (http://en.wikipedia.org/wiki/SI).
+
++ Is there any documentation?
+
+Not yet, but you may look at the unitlib.h header where each function has a 
+short description.
+
++ Features of unitlib
+ 
+ * Parsing of complex unit definitions like "5 kg mm / 16 ns^2".
+ * Extensible rule system to create new units (e.g. Newton: "N = kg m s^-2").
+ * Support for most of the SI prefixes, like nano, kilo, etc.
+ * Output in three different forms: Plain text, LaTeX inline defintion and
+   LaTeX fracs.
+ * Output as a composed unit, e.g. "5 kg m / s^2" can be printed as "5 N".
+
++ Planed features
+
+ * Parsing support for something like "N sqrt(m^2/s^2) * (A/s)^2".
+ * Find best composed unit for unclear matches ("kg m^2 s^-2" -> "N m").
+
++ What programs are using unitlib?
+
+At the moment unitlib is used by two programs:
+ * slas2 for Mac OS X (http://sourceforge.net/projects/slas2/)
+ * EinheitenRechner for Windows (http://github.com/borlox/EinheitenRechner/)
+
++ Author
+
+At the moment unitlib is developed by Jan Küchler. 
+Email: kuchen_ <at> gmx <dot> de 
+(yep, that's an underscore right after 'kuchen').
+
++ License
+
+At the moment unitlib has no license, so effectivly that says "all rights 
+reserved".
+It's planned to release the library under a open source license at some point,
+for the meantime just send me an email.
+
+
+
+For any further questions, ideas, or anything else (except spam (-;), please 
+send me an email.
