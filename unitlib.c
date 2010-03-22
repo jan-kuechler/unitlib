@@ -31,8 +31,11 @@ static_assert(sizeofarray(_ul_symbols) == NUM_BASE_UNITS);
 static char errmsg[1024];
 UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...)
 {
-	snprintf(errmsg, 1024, "[%s:%d] ", func, line);
-	size_t len = strlen(errmsg);
+	size_t len = 0;
+	if (_ul_debugging) {
+		snprintf(errmsg, 1024, "[%s:%d] ", func, line);
+		len = strlen(errmsg);
+	}
 
 	va_list ap;
 	va_start(ap, fmt);
