@@ -126,7 +126,7 @@ UL_API bool ul_sqrt(unit_t *unit)
 		unit->exps[i] /= 2;
 	}
 	unit->factor = _sqrtn(unit->factor);
-	return false;
+	return true;
 }
 
 UL_API bool ul_reduceable(const unit_t *unit)
