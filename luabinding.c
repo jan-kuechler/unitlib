@@ -71,19 +71,19 @@ static void mult_nu(lua_State *L, ul_number n, unit_t *unit, bool inv)
 	}
 }
 
-int l_init(lua_State *L)
-{
-	if (!ul_init())
-		error(L);
-	return 0;
-}
+//int l_init(lua_State *L)
+//{
+//	if (!ul_init())
+//		error(L);
+//	return 0;
+//}
 
-int l_quit(lua_State *L)
-{
-	UNUSED(L);
-	ul_quit();
-	return 0;
-}
+//int l_quit(lua_State *L)
+//{
+//	UNUSED(L);
+//	ul_quit();
+//	return 0;
+//}
 
 int l_parse(lua_State *L)
 {
@@ -178,15 +178,15 @@ int lm_len(lua_State *L)
 int m_gc(lua_State *L)
 {
 	UNUSED(L);
-	printf("m_gc\n");
+	ul_quit();
 	return 0;
 }
 
 __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 {
 	luaL_Reg lib[] = {
-		{"init",  l_init},
-		{"quit",  l_quit},
+		//{"init",  l_init},
+		//{"quit",  l_quit},
 		{"parse", l_parse},
 		{"parse_rule", l_parse_rule},
 		{NULL, NULL},
@@ -221,6 +221,10 @@ __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 	luaL_newmetatable(L, UNIT);
 	luaL_register(L, NULL, meta);
 	lua_pop(L, 1);
+
+	ul_debugout("lua-unitlib-debug.log", false);
+	ul_debugging(true);
+	ul_init();
 
 	return 1;
 }
