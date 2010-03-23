@@ -514,7 +514,14 @@ static bool kilogram_hack(void)
 		{[U_KILOGRAM] = 1},
 		1e-3,
 	};
-	if (!add_rule(strdup("g"), &gram, true)) // strdup because add_rule expects malloc'd memory (it gets free'd at ul_quit).
+
+	char *sym = malloc(sizeof("g"));
+	if (!sym) {
+		ERROR("Failed to allocate memory.");
+		return false;
+	}
+	strcpy(sym, "g");
+	if (!add_rule(sym, &gram, true))
 		return false;
 	return true;
 }
@@ -524,6 +531,7 @@ static void free_rules(void)
 	rule_t *cur = dynamic_rules;
 	while (cur) {
 		rule_t *next = cur->next;
+		debug("Free %s", cur->symbol);
 		free((char*)cur->symbol);
 		free(cur);
 		cur = next;
@@ -536,6 +544,7 @@ static void free_prefixes(void)
 	prefix_t *pref = prefixes;
 	while (pref) {
 		prefix_t *next = pref->next;
+		debug("Free %c", pref->symbol);
 		free(pref);
 		pref = next;
 	}
@@ -606,6 +615,8 @@ UL_LINKAGE bool _ul_init_parser(void)
 
 UL_LINKAGE void _ul_free_rules(void)
 {
+	debug("Freeing rules");
 	free_rules();
+	debug("Freeing prefixes");
 	free_prefixes();
 }
