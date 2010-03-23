@@ -7,6 +7,9 @@
 #include "intern.h"
 #include "unitlib.h"
 
+// My string.h is missing strdup so place it here.
+char *strdup(const char *s1);
+
 typedef struct rule
 {
 	const char *symbol;
@@ -495,6 +498,66 @@ UL_API bool ul_load_rules(const char *path)
 	return ok;
 }
 
+UL_LINKAGE const char *_ul_reduce(const unit_t *unit)
+{
+	for (rule_t *cur = rules; cur; cur = cur->next) {
+		if (ul_cmp(&cur->unit, unit) & UL_SAME_UNIT)
+			return cur->symbol;
+	}
+	return NULL;
+}
+
+static bool kilogram_hack(void)
+{
+	// stupid inconsistend SI system...
+	unit_t gram = {
+		{[U_KILOGRAM] = 1},
+		1e-3,
+	};
+
+	char *sym = malloc(sizeof("g"));
+	if (!sym) {
+		ERROR("Failed to allocate memory.");
+		return false;
+	}
+	strcpy(sym, "g");
+	if (!add_rule(sym, &gram, true))
+		return false;
+	return true;
+}
+
+static void free_rules(void)
+{
+	rule_t *cur = dynamic_rules;
+	while (cur) {
+		rule_t *next = cur->next;
+		debug("Free %s", cur->symbol);
+		free((char*)cur->symbol);
+		free(cur);
+		cur = next;
+	}
+	dynamic_rules = NULL;
+}
+
+static void free_prefixes(void)
+{
+	prefix_t *pref = prefixes;
+	while (pref) {
+		prefix_t *next = pref->next;
+		debug("Free %c", pref->symbol);
+		free(pref);
+		pref = next;
+	}
+	prefixes = NULL;
+}
+
+UL_API bool ul_reset_rules(void)
+{
+	free_rules();
+	kilogram_hack();
+	return true;
+}
+
 static bool init_prefixes(void)
 {
 	debug("Initializing prefixes");
@@ -540,13 +603,7 @@ UL_LINKAGE bool _ul_init_parser(void)
 	rules = base_rules;
 	debug("Base rules initialized");
 
-	// stupid inconsistend SI system...
-	unit_t gram = {
-		{[U_KILOGRAM] = 1},
-		1e-3,
-	};
-	debug("Adding gram");
-	if (!add_rule("g", &gram, true))
+	if (!kilogram_hack())
 		return false;
 
 	if (!init_prefixes())
@@ -558,19 +615,8 @@ UL_LINKAGE bool _ul_init_parser(void)
 
 UL_LINKAGE void _ul_free_rules(void)
 {
-	debug("Freeing rule list");
-	rule_t *cur = dynamic_rules;
-	while (cur) {
-		rule_t *next = cur->next;
-		free((char*)cur->symbol);
-		free(cur);
-		cur = next;
-	}
-
-	prefix_t *pref = prefixes;
-	while (pref) {
-		prefix_t *next = pref->next;
-		free(pref);
-		pref = next;
-	}
+	debug("Freeing rules");
+	free_rules();
+	debug("Freeing prefixes");
+	free_prefixes();
 }

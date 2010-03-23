@@ -11,7 +11,7 @@
 #include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
-#define UL_VERSION   "0.4b2"
+#define UL_VERSION   "0.4b3"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
 #ifdef __cplusplus
@@ -20,13 +20,13 @@
 #define UL_LINKAGE
 #endif
 
-#if defined(UL_EXPORT_DLL)
-#define UL_API UL_LINKAGE __declspec(dllexport) __stdcall
-#elif defined(UL_IMPORT_DLL)
-#define UL_API UL_LINKAGE __declspec(dllimport) __stdcall
-#else
+//#if defined(UL_EXPORT_DLL)
+//#define UL_API UL_LINKAGE __declspec(dllexport) __stdcall
+//#elif defined(UL_IMPORT_DLL)
+//#define UL_API UL_LINKAGE __declspec(dllimport) __stdcall
+//#else
 #define UL_API UL_LINKAGE
-#endif
+//#endif
 
 typedef enum base_unit
 {
@@ -45,25 +45,25 @@ typedef enum base_unit
 
 typedef enum ul_format
 {
-	UL_FMT_PLAIN,
+	UL_FMT_PLAIN = 0,
 	UL_FMT_LATEX_FRAC,
 	UL_FMT_LATEX_INLINE,
+	UL_NUM_FORMATS,
 } ul_format_t;
 
 typedef enum ul_cmpres
 {
-	UL_ERROR       = 0xFF,
 	UL_DIFFERENT   = 0x00,
 	UL_SAME_UNIT   = 0x01,
 	UL_SAME_FACTOR = 0x02,
 	UL_EQUAL       = 0x03,
+	UL_ERROR       = 0xFF,
 } ul_cmpres_t;
 
-typedef struct ul_format_ops
+enum ul_fmtop
 {
-	bool sort;
-	int  order[NUM_BASE_UNITS];
-} ul_fmtops_t;
+	UL_FOP_REDUCE = 0x01,
+};
 
 typedef struct unit
 {
@@ -207,25 +207,32 @@ UL_API bool ul_inverse(unit_t *unit);
 UL_API bool ul_sqrt(unit_t *unit);
 
 /**
+ * Checks whether a unit is reduceable to a composed unit
+ * @param unit The unit
+ * @return True if the unit is reduceable, false if not or if an error occured
+ */
+UL_API bool ul_reduceable(const unit_t *unit);
+
+/**
  * Prints the unit to a file according to the format
  * @param file   The file
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_fprint(FILE *f, const unit_t *unit, ul_format_t format, int fops);
 
 /**
  * Prints the unit to stdout according to the format
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp)
+static inline bool ul_print(const unit_t *unit, ul_format_t format, int fops)
 {
-	return ul_fprint(stdout, unit, format, fmtp);
+	return ul_fprint(stdout, unit, format, fops);
 }
 
 /**
@@ -234,17 +241,18 @@ static inline bool ul_print(const unit_t *unit, ul_format_t format, ul_fmtops_t 
  * @param buflen Length of the buffer
  * @param unit   The unit
  * @param format The format
- * @param fmtp   Additional format parameters
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return success
  */
-UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, ul_fmtops_t *fmtp);
+UL_API bool ul_snprint(char *buffer, size_t buflen, const unit_t *unit, ul_format_t format, int fops);
 
 /**
  * Returns the length of the formated unit
  * @param unit   The unit
  * @param format Format option
+ * @param fops   A bitmap containing UL_FOP_* flags
  * @return Length of the formated string
  */
-UL_API size_t ul_length(const unit_t *unit, ul_format_t format);
+UL_API size_t ul_length(const unit_t *unit, ul_format_t format, int fops);
 
 #endif /*UNITLIB_H*/

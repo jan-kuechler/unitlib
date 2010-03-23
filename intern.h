@@ -20,6 +20,8 @@ UL_LINKAGE void _ul_debug(const char *fmt, ...);
 UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...);
 #define ERROR(msg, ...) _ul_set_error(__func__, __LINE__, msg, ##__VA_ARGS__)
 
+UL_LINKAGE const char *_ul_reduce(const unit_t *unit);
+
 UL_LINKAGE bool _ul_init_parser(void);
 UL_LINKAGE void _ul_free_rules(void);
 

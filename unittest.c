@@ -32,114 +32,123 @@ static unit_t make_unit(ul_number fac, ...)
 }
 #define MAKE_UNIT(...) make_unit(__VA_ARGS__,0,0,0)
 
-TEST_SUITE(parser)
-	TEST
-		unit_t u;
-		CHECK(ul_parse("m", &u));
-		FAIL_MSG("Error: %s", ul_error());
-		CHECK(u.exps[U_METER] == 1);
+AUTO_FAIL
+	printf("[%s-%d-%d] The test '%s' failed: \n[%s-%d-%d] Error message: %s\n", Suite, Test, Check, Expr, Suite, Test, Check, ul_error());
+END_AUTO_FAIL
 
-		int i=0;
-		for (; i < NUM_BASE_UNITS; ++i) {
-			if (i != U_METER) {
+TEST_SUITE(parser)
+
+	GROUP("base")
+		TEST
+			unit_t u;
+			CHECK(ul_parse("m", &u));
+			FAIL_MSG("Error: %s", ul_error());
+			CHECK(u.exps[U_METER] == 1);
+
+			int i=0;
+			for (; i < NUM_BASE_UNITS; ++i) {
+				if (i != U_METER) {
+					CHECK(u.exps[i] == 0);
+				}
+			}
+
+			CHECK(ncmp(u.factor, 1.0) == 0);
+		END_TEST
+
+		TEST
+			unit_t u;
+
+			CHECK(ul_parse("	\n kg^2 * m  ", &u));
+			FAIL_MSG("Error: %s", ul_error());
+			CHECK(u.exps[U_KILOGRAM] == 2);
+			CHECK(u.exps[U_METER] == 1);
+			CHECK(u.exps[U_SECOND] == 0);
+			CHECK(ncmp(u.factor, 1.0) == 0);
+
+			CHECK(ul_parse("2 Cd 7 s^-1", &u));
+			FAIL_MSG("Error: %s", ul_error());
+			CHECK(u.exps[U_CANDELA] == 1);
+			CHECK(u.exps[U_SECOND] == -1);
+			CHECK(ncmp(u.factor, 14.0) == 0);
+
+			CHECK(ul_parse("", &u));
+			int i=0;
+			for (; i < NUM_BASE_UNITS; ++i) {
 				CHECK(u.exps[i] == 0);
 			}
-		}
+			CHECK(ncmp(u.factor, 1.0) == 0);
+		END_TEST
+	END_GROUP()
 
-		CHECK(ncmp(u.factor, 1.0) == 0);
-	END_TEST
+	GROUP("validation")
+		TEST
+			unit_t u;
 
-	TEST
-		unit_t u;
+			const char *strings[] = {
+				"5*kg^2",    // need whitespace
+				"5 ** kg^2", // double *
+				"5! * kg^2", // !
+				"5 * kg^2!", // !
+				NULL
+			};
 
-		CHECK(ul_parse("	\n kg^2 * m  ", &u));
-		FAIL_MSG("Error: %s", ul_error());
-		CHECK(u.exps[U_KILOGRAM] == 2);
-		CHECK(u.exps[U_METER] == 1);
-		CHECK(u.exps[U_SECOND] == 0);
-		CHECK(ncmp(u.factor, 1.0) == 0);
+			int i = 0;
+			while (strings[i]) {
+				CHECK(ul_parse(strings[i], &u) == false);
+				PASS_MSG("Error message: %s", ul_error());
+				FAIL_MSG("'%s' is invalid but the parser reports no error.", strings[i]);
+				i++;
+			}
+		END_TEST
 
-		CHECK(ul_parse("2 Cd 7 s^-1", &u));
-		FAIL_MSG("Error: %s", ul_error());
-		CHECK(u.exps[U_CANDELA] == 1);
-		CHECK(u.exps[U_SECOND] == -1);
-		CHECK(ncmp(u.factor, 14.0) == 0);
+		TEST
+			const char *strings[] = {
+				"",          // empty rule
+				" =",        // empty symbol
+				"16 = 16",   // invalid rule
+				" a b = s ", // invalid symbol
+				" c == kg",  // double =
+				"d = e",     // unknown 'e'
+				" = kg",     // empty symbol
+				NULL,
+			};
 
-		CHECK(ul_parse("", &u));
-		int i=0;
-		for (; i < NUM_BASE_UNITS; ++i) {
-			CHECK(u.exps[i] == 0);
-		}
-		CHECK(ncmp(u.factor, 1.0) == 0);
-	END_TEST
+			int i=0;
+			while (strings[i]) {
+				CHECK(ul_parse_rule(strings[i]) == false);
+				PASS_MSG("Error message: %s", ul_error());
+				FAIL_MSG("'%s' is invalid but the parser reports no error.", strings[i]);
+				i++;
+			}
+		END_TEST
 
-	TEST
-		unit_t u;
+		TEST
+			unit_t u;
 
-		const char *strings[] = {
-			"5*kg^2",    // need whitespace
-			"5 ** kg^2", // double *
-			"5! * kg^2", // !
-			"5 * kg^2!", // !
-			NULL
-		};
+			CHECK(ul_parse(NULL, NULL) == false);
+			CHECK(ul_parse(NULL, &u)   == false);
+			CHECK(ul_parse("kg", NULL) == false);
 
-		int i = 0;
-		while (strings[i]) {
-			CHECK(ul_parse(strings[i], &u) == false);
-			PASS_MSG("Error message: %s", ul_error());
-			FAIL_MSG("'%s' is invalid but the parser reports no error.", strings[i]);
-			i++;
-		}
-	END_TEST
+			CHECK(ul_parse_rule(NULL) == false);
+			CHECK(ul_parse_rule("")   == false);
+		END_TEST
 
-	TEST
-		const char *strings[] = {
-			"",          // empty rule
-			" =",        // empty symbol
-			"16 = 16",   // invalid rule
-			" a b = s ", // invalid symbol
-			" c == kg",  // double =
-			"d = e",     // unknown 'e'
-			" = kg",     // empty symbol
-			NULL,
-		};
+		TEST
+			// Empty rules are allowed
+			CHECK(ul_parse_rule("EmptySymbol = "));
+			FAIL_MSG("Error: %s", ul_error());
 
-		int i=0;
-		while (strings[i]) {
-			CHECK(ul_parse_rule(strings[i]) == false);
-			PASS_MSG("Error message: %s", ul_error());
-			FAIL_MSG("'%s' is invalid but the parser reports no error.", strings[i]);
-			i++;
-		}
-	END_TEST
+			unit_t u;
+			CHECK(ul_parse("EmptySymbol", &u));
+			FAIL_MSG("Error: %s", ul_error());
 
-	TEST
-		// Empty rules are allowed
-		CHECK(ul_parse_rule("EmptySymbol = "));
-		FAIL_MSG("Error: %s", ul_error());
-
-		unit_t u;
-		CHECK(ul_parse("EmptySymbol", &u));
-		FAIL_MSG("Error: %s", ul_error());
-
-		int i=0;
-		for (; i < NUM_BASE_UNITS; ++i) {
-			CHECK(u.exps[i] == 0);
-		}
-		CHECK(ncmp(u.factor, 1.0) == 0);
-	END_TEST
-
-	TEST
-		unit_t u;
-
-		CHECK(ul_parse(NULL, NULL) == false);
-		CHECK(ul_parse(NULL, &u)   == false);
-		CHECK(ul_parse("kg", NULL) == false);
-
-		CHECK(ul_parse_rule(NULL) == false);
-		CHECK(ul_parse_rule("")   == false);
-	END_TEST
+			int i=0;
+			for (; i < NUM_BASE_UNITS; ++i) {
+				CHECK(u.exps[i] == 0);
+			}
+			CHECK(ncmp(u.factor, 1.0) == 0);
+		END_TEST
+	END_GROUP()
 
 	TEST
 		unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
@@ -360,80 +369,98 @@ TEST_SUITE(format)
 		unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 
 		kg.factor = 1.5;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "1.5 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 
 		kg.factor = -1.0;
-		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &kg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "-1 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
-		CHECK(ul_length(&kg, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN));
+		CHECK(ul_length(&kg, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&kg, UL_FMT_PLAIN, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "1 m kg s^-2") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_PLAIN) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_PLAIN));
+		CHECK(ul_length(&N, UL_FMT_PLAIN, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_PLAIN, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
 		CHECK(strcmp(buffer, "$1 \\text{ m} \\text{ kg} \\text{ s}^{-2}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_LATEX_INLINE) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_INLINE));
+		CHECK(ul_length(&N, UL_FMT_LATEX_INLINE, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_INLINE, 0));
 	END_TEST
 
 	TEST
 		unit_t N = MAKE_UNIT(1.0, U_KILOGRAM, 1, U_SECOND, -2, U_METER, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC, NULL));
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC, 0));
 		FAIL_MSG("Error: %s", ul_error());
 
-		CHECK(strcmp(buffer, "\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}") == 0);
+		CHECK(strcmp(buffer, "$\\frac{1 \\text{ m} \\text{ kg}}{\\text{s}^{2}}$") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
 
-		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC) == strlen(buffer));
-		FAIL_MSG("ul_length: %u", ul_length(&N, UL_FMT_LATEX_FRAC));
+		CHECK(ul_length(&N, UL_FMT_LATEX_FRAC, 0) == strlen(buffer));
+		FAIL_MSG("ul_length: %zu", ul_length(&N, UL_FMT_LATEX_FRAC, 0));
 	END_TEST
 
 	TEST
 		unit_t zeroKg = MAKE_UNIT(0.0, U_KILOGRAM, 1);
 
 		char buffer[128];
-		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN, NULL));
+		CHECK(ul_snprint(buffer, 128, &zeroKg, UL_FMT_PLAIN, 0));
 		FAIL_MSG("Error: %s", ul_error());
 		CHECK(strcmp(buffer, "0 kg") == 0);
 		FAIL_MSG("buffer: '%s'", buffer);
+	END_TEST
+END_TEST_SUITE()
+
+TEST_SUITE(reduce)
+	TEST
+		CHECK(ul_parse_rule("N = 1 kg m s^-2"));
+
+		unit_t N = MAKE_UNIT(1, U_KILOGRAM, 1, U_METER, 1, U_SECOND, -2);
+
+		char buffer[128];
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_PLAIN, UL_FOP_REDUCE));
+		CHECK(strcmp(buffer, "1 N") == 0);
+
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_INLINE, UL_FOP_REDUCE));
+		CHECK(strcmp(buffer, "$1 \\text{ N}$") == 0);
+
+		CHECK(ul_snprint(buffer, 128, &N, UL_FMT_LATEX_FRAC, UL_FOP_REDUCE));
+		CHECK(strcmp(buffer, "$1 \\text{ N}$") == 0);
 	END_TEST
 END_TEST_SUITE()
 
@@ -447,10 +474,12 @@ int main(void)
 
 	INIT_TEST();
 	SET_LOGLVL(L_NORMAL);
+	USE_AUTO_FAIL();
 
 	RUN_SUITE(core);
 	RUN_SUITE(parser);
 	RUN_SUITE(format);
+	RUN_SUITE(reduce);
 
 	ul_quit();
 
@@ -467,7 +496,7 @@ int main(void)
 #define FATAL(expr) \
 	do { \
 		if (expr) { \
-			PRINT(_o, L_RESULT, "[%s-%d] Fatal: %s\n", _name, _id, #expr); \
+			PRINT(_o, L_RESULT, "[%s%s-%d] Fatal: %s\n", _name, _group_name, _id, #expr); \
 			exit(1); \
 		} \
 	} while (0)
@@ -477,14 +506,21 @@ int main(void)
 	  int _this = ++_cid; \
 		if (!(expr)) { \
 			_err++; _fail++; \
-			PRINT(_o, L_NORMAL, "[%s-%d-%d] Fail: '%s'\n", _name, _id, _this, #expr); \
+			PRINT(_o, L_NORMAL, "[%s%s-%d-%d] Fail: '%s'\n", _name, _group_name, _id, _this, #expr); \
 			_last = false;\
+			if (_o->autofail) _o->autofail(_name, _id, _this, #expr); \
 		} \
 		else { \
-			PRINT(_o, L_VERBOSE, "[%s-%d-%d] Pass: '%s'\n", _name, _id, _this, #expr); \
+			PRINT(_o, L_VERBOSE, "[%s%s-%d-%d] Pass: '%s'\n", _name, _group_name, _id, _this, #expr); \
 			_last = true; \
 		} \
 	} while (0)
+
+#define AUTO_FAIL \
+	static inline void _auto_fail(const char *Suite, int Test, int Check, const char *Expr) {
+
+#define END_AUTO_FAIL \
+	}
 
 #define FAIL_MSG(msg, ...) \
 	do {if (!_last) PRINT(_o,L_NORMAL,msg"\n", ##__VA_ARGS__); } while (0)
@@ -496,14 +532,21 @@ int main(void)
 	do { printf("* " fmt "\n", ##__VA_ARGS__); } while (0)
 
 // TEST SUITE
-#define TEST_SUITE(name)       \
-	int _test_##name(_tops *_o) { \
-		const char *_name = #name; \
-		int _fail = 0;             \
-		int _test_id = 0;          \
+#define TEST_SUITE(name)          \
+	int _test_##name(_tops *_o) {   \
+		const char *_name = #name;    \
+		const char *_group_name = ""; \
+		int _fail = 0;                \
+		int _test_id = 0;             \
 
 #define END_TEST_SUITE() \
 	return _fail; }
+
+#define GROUP(name) \
+	{ const char *_group_name = "-" name; int _test_id = 0;
+
+#define END_GROUP() \
+	}
 
 // SINGLE TEST
 #define TEST \
@@ -511,10 +554,10 @@ int main(void)
 
 #define END_TEST \
 		if (_err > 0) { \
-			PRINT(_o, L_NORMAL, "[%s-%d] failed with %d error%s.\n", _name, _id, _err, _err > 1 ? "s" : ""); \
+			PRINT(_o, L_NORMAL, "[%s%s-%d] failed with %d error%s.\n", _name, _group_name, _id, _err, _err > 1 ? "s" : ""); \
 		} \
 		else { \
-			PRINT(_o, L_NORMAL, "[%s-%d] passed.\n", _name, _id); \
+			PRINT(_o, L_NORMAL, "[%s%s-%d] passed.\n", _name, _group_name, _id); \
 		} \
 	}
 
@@ -522,6 +565,7 @@ int main(void)
 typedef struct
 {
 	int loglvl;
+	void (*autofail)(const char*,int,int,const char*);
 } _tops;
 
 enum
@@ -547,10 +591,13 @@ static inline int _run_suite(int (*suite)(_tops*), const char *name, _tops *o)
 }
 
 #define INIT_TEST() \
-	_tops _ops; int _tres = 0;
+	_tops _ops = {L_RESULT,NULL}; int _tres = 0;
 
 #define SET_LOGLVL(lvl) \
 	_ops.loglvl = (lvl);
+
+#define USE_AUTO_FAIL() \
+	_ops.autofail = _auto_fail;
 
 #define RUN_SUITE(name) \
 	_tres += _run_suite(_test_##name, #name, &_ops)
