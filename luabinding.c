@@ -110,7 +110,7 @@ int lm_tostring(lua_State *L)
 
 	// TODO: Find something better than a static buffer
 	static char buffer[4096];
-	if (!ul_snprint(buffer, 4096, unit, UL_FMT_PLAIN, NULL))
+	if (!ul_snprint(buffer, 4096, unit, UL_FMT_PLAIN, 0))
 		error(L);
 
 	lua_pushstring(L, buffer);
