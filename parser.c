@@ -44,6 +44,27 @@ enum {
 	MAX_ITEM_SIZE = 1024,
 };
 
+enum result {
+	RS_ERROR,
+	RS_HANDLED,
+	RS_NOT_MINE,
+};
+#define HANDLE_RESULT(marg_rs) \
+	do { \
+		enum result macro_rs = marg_rs; \
+		debug("rs: %d", macro_rs); \
+		if (macro_rs == RS_ERROR) { \
+			debug("%s == RS_ERROR", #marg_rs); \
+			return false; \
+		} \
+		if (macro_rs == RS_HANDLED) { \
+			debug("%s == RS_HANDLED", #marg_rs); \
+			return true; \
+		} \
+		assert(macro_rs == RS_NOT_MINE); \
+		debug("%s == RS_NOT_MINE", #marg_rs); \
+	} while (0);
+
 // Returns the last rule in the list
 static rule_t *last_rule(void)
 {
@@ -106,58 +127,60 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
+static bool splitchars[256] = {
+	['*'] = true,
+	['/'] = true,
+	['('] = true,
+	[')'] = true,
+};
+static inline bool issplit(char c)
+{
+	return splitchars[(int)c];
+}
+
 static size_t nextsplit(const char *text, size_t start)
 {
 	assert(text);
 	size_t i = start;
-	while (text[i] && !(isspace(text[i]) || text[i] == '*'))
+	while (text[i] && !(isspace(text[i]) || issplit(text[i])))
 		i++;
 	return i;
 }
 
-static bool try_parse_factor(const char *str, unit_t *unit, struct parser_state *state)
+static enum result handle_factor(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit); assert(state);
 	char *endptr;
 	ul_number f = _strton(str, &endptr);
 	if (endptr && *endptr) {
-		debug("'%s' is not a factor", str);
-		return false;
+		return RS_NOT_MINE;
 	}
+	debug("'%s' is a factor", str);
 	unit->factor *= _pown(f, state->sign);
-	return true;
+	return RS_HANDLED;
 }
 
-static bool is_special(const char *str)
-{
-	assert(str);
-	if (strlen(str) == 1) {
-		switch (str[0]) {
-		case '*':
-			// shall be ignored
-			return true;
-		case '/':
-			// change sign
-			return true;
-		}
-	}
-	return false;
-}
-
-static bool handle_special(const char *str, struct parser_state *state)
+static enum result handle_special(const char *str, struct parser_state *state)
 {
 	assert(str); assert(state);
+
+	debug("handle_special(%s)", str);
 	switch (str[0]) {
 	case '*':
+	case '(':
+	case ')':
 		// ignore
-		return true;
+		return RS_HANDLED;
 
 	case '/':
 		state->sign *= -1;
-		return true;
+		return RS_HANDLED;
+
+	default:
+		return RS_NOT_MINE;
 	}
-	ERROR("Internal error: is_special/handle_special missmatch for '%s'.", str);
-	return false;
+	debug("not special!");
+	return RS_NOT_MINE;
 }
 
 static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
@@ -188,7 +211,7 @@ static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
 	return true;
 }
 
-static bool parse_item(const char *str, unit_t *unit, struct parser_state *state)
+static enum result handle_unit(const char *str, unit_t *unit, struct parser_state *state)
 {
 	assert(str); assert(unit); assert(state);
 	debug("Parse item: '%s'", str);
@@ -203,7 +226,7 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 
 	if (symend >= MAX_SYM_SIZE) {
 		ERROR("Symbol to long");
-		return false;
+		return RS_ERROR;
 	}
 	strncpy(symbol, str, symend);
 	symbol[symend] = '\0';
@@ -212,7 +235,7 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 		// The '^' should not be the last value of the string
 		if (!str[symend+1]) {
 			ERROR("Missing exponent after '^' while parsing '%s'", str);
-			return false;
+			return RS_ERROR;
 		}
 
 		// Parse the exponent
@@ -222,7 +245,7 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 		// the whole exp string was valid only if *endptr is '\0'
 		if (endptr && *endptr) {
 			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
-			return false;
+			return RS_ERROR;
 		}
 	}
 	debug("Exponent is %d", exp);
@@ -231,13 +254,22 @@ static bool parse_item(const char *str, unit_t *unit, struct parser_state *state
 	unit_t *rule;
 	ul_number prefix;
 	if (!unit_and_prefix(symbol, &rule, &prefix))
-		return false;
+		return RS_ERROR;
 
 	// And add the definitions
 	add_unit(unit, rule,  exp);
 	unit->factor *= _pown(prefix, exp);
 
-	return true;
+	return RS_HANDLED;
+}
+
+static bool handle_item(const char *item, unit_t *unit, struct parser_state *state)
+{
+	HANDLE_RESULT(handle_special(item, state));
+	HANDLE_RESULT(handle_factor(item, unit, state));
+	HANDLE_RESULT(handle_unit(item, unit, state));
+	ERROR("Unknown item type for item '%s'", item);
+	return false;
 }
 
 UL_API bool ul_parse(const char *str, unit_t *unit)
@@ -261,10 +293,15 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		// Skip leading whitespaces
 		start = skipspace(str, start);
 		// And find the next whitespace
-		size_t end = nextspace(str, start);
+		size_t end = nextsplit(str, start);
+
+		debug("Start: %d", start);
+		debug("End:   %d", end);
 
 		if (end == start) {// End of string
-			break;
+			if (end == len)
+				break;
+			end++; // this one is a split character
 		}
 		// sanity check
 		if ((end - start) > MAX_ITEM_SIZE ) {
@@ -276,20 +313,13 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		strncpy(this_item, str+start, end-start);
 		this_item[end-start] = '\0';
 
-		// and parse it
-		if (is_special(this_item)) {
-			if (!handle_special(this_item, &state))
-				return false;
-		}
-		else if (try_parse_factor(this_item, unit, &state)) {
-			// nothing todo
-		}
-		else {
-			if (!parse_item(this_item, unit, &state))
-				return false;
-		}
+		debug("Item is '%s'", this_item);
 
-		start = end + 1;
+		// and handle it
+		if (!handle_item(this_item, unit, &state))
+			return false;
+
+		start = end;
 	} while (start < len);
 
 	return true;
