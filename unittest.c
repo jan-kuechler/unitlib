@@ -85,10 +85,12 @@ TEST_SUITE(parser)
 			unit_t u;
 
 			const char *strings[] = {
-				//"5*kg^2",    // need whitespace
-				//"5 ** kg^2", // double *
+				"5 ** kg^2", // double *
 				"5! * kg^2", // !
 				"5 * kg^2!", // !
+				"sqrt kg^2)", // missing ( after sqrt
+				"( kg^2 m",   // missing )
+				"((((((((((((((((((((((((((((((((((((((((((((((((",
 				NULL
 			};
 
@@ -223,18 +225,16 @@ TEST_SUITE(parser)
 	END_TEST
 
 	GROUP("extended")
-			TEST
-				unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
-				unit_t u;
+		TEST
+			unit_t kg = MAKE_UNIT(2.0, U_KILOGRAM, 1);
+			unit_t u;
 
-				CHECK(ul_parse("sqrt(kg^2)", &u));
-				CHECK(ul_equal(&u, &kg));
-				char buffer[128];
-				ul_snprint(buffer, 128, &u, UL_FMT_PLAIN, 0);
-				FAIL_MSG("Result was: %s", buffer);
+			CHECK(ul_parse("sqrt(4 kg^2)", &u));
+			CHECK(ul_equal(&u, &kg));
+			char buffer[128];
+			ul_snprint(buffer, 128, &u, UL_FMT_PLAIN, 0);
+			FAIL_MSG("Result was: %s", buffer);
 		END_TEST
-
-		SKIP_GROUP()
 
 		TEST
 			unit_t u;

@@ -42,7 +42,9 @@ struct parser_state
 	unit_t *unit;
 	unit_t ustack[USTACK_SIZE];
 	size_t spos;
-	size_t in_sqrt;
+	bool is_sqrt[USTACK_SIZE];
+	bool need_bracket;
+	char was_operator;
 };
 
 enum {
@@ -58,17 +60,13 @@ enum result {
 #define HANDLE_RESULT(marg_rs) \
 	do { \
 		enum result macro_rs = marg_rs; \
-		debug("rs: %d", macro_rs); \
 		if (macro_rs == RS_ERROR) { \
-			debug("%s == RS_ERROR", #marg_rs); \
 			return false; \
 		} \
 		if (macro_rs == RS_HANDLED) { \
-			debug("%s == RS_HANDLED", #marg_rs); \
 			return true; \
 		} \
 		assert(macro_rs == RS_NOT_MINE); \
-		debug("%s == RS_NOT_MINE", #marg_rs); \
 	} while (0);
 
 // Returns the last rule in the list
@@ -174,9 +172,8 @@ static bool push_unit(struct parser_state *state)
 		ERROR("Maximal nesting level exceeded.");
 		return false;
 	}
-	unit_t *prev = state->unit;
-	state->unit = &state->unit[state->spos];
-	debug("Push: %p -> %p", prev, state->unit);
+
+	state->unit = &state->ustack[state->spos];
 	init_unit(state->unit);
 	return true;
 }
@@ -187,17 +184,25 @@ static bool pop_unit(struct parser_state *state)
 		ERROR("Internal error: Stack missmatch!");
 		return false;
 	}
+	bool sqrt = state->is_sqrt[state->spos];
+	state->is_sqrt[state->spos] = false;
+
 	unit_t *top = state->unit;
 	state->spos--;
 
-	debug("Pop: %u -> %u", state->spos+1, state->spos);
-	debug("Units: top, top-1, result");
-	debug(DBG_UNIT_HDR);
-	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(top));
-	state->unit = &state->unit[state->spos];
-	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
+	if (sqrt && !ul_sqrt(top))
+			return false;
+
+	//debug("Pop: %u -> %u", state->spos+1, state->spos);
+	//debug("Pop: %p -> %p (%p)", top, &state->ustack[state->spos], state->unit);
+	debug("is_sqrt flag is set.");
+	//debug("Units: top, top-1, result");
+	//debug(DBG_UNIT_HDR);
+	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(top));
+	state->unit = &state->ustack[state->spos];
+	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
 	add_unit(state->unit, top, 1);
-	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
+	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
 	return true;
 }
 
@@ -215,29 +220,49 @@ static enum result handle_special(const char *str, struct parser_state *state)
 	assert(str); assert(state);
 
 	debug("handle_special(%s)", str);
-	switch (str[0]) {
-	case '*':
-		// ignore
-		return RS_HANDLED;
 
-	case '/':
-		state->sign *= -1;
-		return RS_HANDLED;
+	size_t len = strlen(str);
 
-	case '(':
-		if (!push_unit(state))
-			return RS_ERROR;
-		return RS_HANDLED;
-
-	case ')':
-		return handle_bracket_end(str, state);
+	if (state->need_bracket && (len > 1 || str[0] != '(')) {
+		ERROR("Opening bracket expected after sqrt!");
+		return false;
 	}
+
+	if (len == 1) {
+		switch (str[0]) {
+
+		case '/':
+			state->sign *= -1;
+			// big bad fallthrough
+			// * has no effect, and so the error handling
+			// code is not doubled
+		case '*':
+			if (state->was_operator) {
+				ERROR("Cannot have %c right after %c.", str[0], state->was_operator);
+				return RS_ERROR;
+			}
+			state->was_operator = str[0];
+			return RS_HANDLED;
+
+		case '(':
+			state->was_operator = '\0';
+			state->need_bracket = false;
+			if (!push_unit(state))
+				return RS_ERROR;
+			return RS_HANDLED;
+
+		case ')':
+			state->was_operator = '\0';
+			return handle_bracket_end(str, state);
+		}
+	}
+	state->was_operator = '\0';
 
 	if (strcmp(str, "sqrt") == 0) {
 		debug("Found sqrt");
-		state->in_sqrt++;
-		//if (!push_unit(state))
-		//	return RS_ERROR;
+		if (state->spos + 1 < USTACK_SIZE)
+			state->is_sqrt[state->spos+1] = true;
+		state->need_bracket = true;
 		return RS_HANDLED;
 	}
 
@@ -327,7 +352,7 @@ static enum result handle_unit(const char *str, struct parser_state *state)
 
 static bool handle_item(const char *item, struct parser_state *state)
 {
-	HANDLE_RESULT(handle_special(item, state));
+	HANDLE_RESULT(handle_special(item, state)); // special has to be the first one!
 	HANDLE_RESULT(handle_factor(item, state));
 	HANDLE_RESULT(handle_unit(item, state));
 	ERROR("Unknown item type for item '%s'", item);
@@ -342,11 +367,14 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 	}
 	debug("Parse unit: '%s'", str);
 
-	struct parser_state state;
-	state.sign = 1;
-	state.in_sqrt = 0;
+	struct parser_state state = {
+		.sign = 1,
+		.is_sqrt = {false},
+		.need_bracket = false,
+		.was_operator = '\0',
+		.spos = 0,
+	};
 	state.unit = &state.ustack[0];
-	state.spos = 0;
 
 	init_unit(state.unit);
 
@@ -363,10 +391,10 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		debug("Start: %d", start);
 		debug("End:   %d", end);
 
-		if (end == start) {// End of string
-			if (end == len)
+		if (end == start) {
+			if (end == len) // end of string
 				break;
-			end++; // this one is a split character
+			end++; // this one is a single splitchar
 		}
 		// sanity check
 		if ((end - start) > MAX_ITEM_SIZE ) {
@@ -386,6 +414,11 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 
 		start = end;
 	} while (start < len);
+
+	if (state.spos != 0) {
+		ERROR("Bracket missmatch");
+		return false;
+	}
 
 	copy_unit(&state.ustack[0], unit);
 
