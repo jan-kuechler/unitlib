@@ -222,12 +222,25 @@ TEST_SUITE(parser)
 		CHECK(ul_equal(&test, &correct));
 	END_TEST
 
-	//GROUP("extended")
-	//	TEST
-	//		unit_t u;
-	//		CHECK(ul_parse("kg*m^2/(s^4 kg) sqrt(A^2 K^4)", &u));
-	//	END_TEST
-	//END_GROUP()
+	GROUP("extended")
+			TEST
+				unit_t kg = MAKE_UNIT(1.0, U_KILOGRAM, 1);
+				unit_t u;
+
+				CHECK(ul_parse("sqrt(kg^2)", &u));
+				CHECK(ul_equal(&u, &kg));
+				char buffer[128];
+				ul_snprint(buffer, 128, &u, UL_FMT_PLAIN, 0);
+				FAIL_MSG("Result was: %s", buffer);
+		END_TEST
+
+		SKIP_GROUP()
+
+		TEST
+			unit_t u;
+			CHECK(ul_parse("kg*m^2/(s^4 kg) sqrt(A^2 K^4)", &u));
+		END_TEST
+	END_GROUP()
 END_TEST_SUITE()
 
 TEST_SUITE(core)
@@ -551,10 +564,12 @@ int main(void)
 	return _fail; }
 
 #define GROUP(name) \
-	{ const char *_group_name = "-" name; int _test_id = 0;
+	do { const char *_group_name = "-" name; int _test_id = 0;
 
 #define END_GROUP() \
-	}
+	} while (0);
+
+#define SKIP_GROUP()	PRINT(_o, L_NORMAL, "[%s%s] skipped.\n", _name, _group_name); break;
 
 // SINGLE TEST
 #define TEST \

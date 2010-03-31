@@ -34,9 +34,15 @@ static prefix_t *prefixes = NULL;
 
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
+enum { USTACK_SIZE = 16, };
+
 struct parser_state
 {
 	int sign;
+	unit_t *unit;
+	unit_t ustack[USTACK_SIZE];
+	size_t spos;
+	size_t in_sqrt;
 };
 
 enum {
@@ -147,16 +153,60 @@ static size_t nextsplit(const char *text, size_t start)
 	return i;
 }
 
-static enum result handle_factor(const char *str, unit_t *unit, struct parser_state *state)
+static enum result handle_factor(const char *str, struct parser_state *state)
 {
-	assert(str); assert(unit); assert(state);
+	assert(str); assert(state);
 	char *endptr;
 	ul_number f = _strton(str, &endptr);
 	if (endptr && *endptr) {
 		return RS_NOT_MINE;
 	}
 	debug("'%s' is a factor", str);
-	unit->factor *= _pown(f, state->sign);
+	state->unit->factor *= _pown(f, state->sign);
+	return RS_HANDLED;
+}
+
+static bool push_unit(struct parser_state *state)
+{
+	state->spos++;
+	debug("Push: %u -> %u", state->spos-1, state->spos);
+	if (state->spos >= USTACK_SIZE) {
+		ERROR("Maximal nesting level exceeded.");
+		return false;
+	}
+	unit_t *prev = state->unit;
+	state->unit = &state->unit[state->spos];
+	debug("Push: %p -> %p", prev, state->unit);
+	init_unit(state->unit);
+	return true;
+}
+
+static bool pop_unit(struct parser_state *state)
+{
+	if (state->spos == 0) {
+		ERROR("Internal error: Stack missmatch!");
+		return false;
+	}
+	unit_t *top = state->unit;
+	state->spos--;
+
+	debug("Pop: %u -> %u", state->spos+1, state->spos);
+	debug("Units: top, top-1, result");
+	debug(DBG_UNIT_HDR);
+	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(top));
+	state->unit = &state->unit[state->spos];
+	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
+	add_unit(state->unit, top, 1);
+	debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
+	return true;
+}
+
+static enum result handle_bracket_end(const char *str, struct parser_state *state)
+{
+	(void)str;
+	// TODO: add exp and sqrt support
+	if (!pop_unit(state))
+		return RS_ERROR;
 	return RS_HANDLED;
 }
 
@@ -167,8 +217,6 @@ static enum result handle_special(const char *str, struct parser_state *state)
 	debug("handle_special(%s)", str);
 	switch (str[0]) {
 	case '*':
-	case '(':
-	case ')':
 		// ignore
 		return RS_HANDLED;
 
@@ -176,9 +224,23 @@ static enum result handle_special(const char *str, struct parser_state *state)
 		state->sign *= -1;
 		return RS_HANDLED;
 
-	default:
-		return RS_NOT_MINE;
+	case '(':
+		if (!push_unit(state))
+			return RS_ERROR;
+		return RS_HANDLED;
+
+	case ')':
+		return handle_bracket_end(str, state);
 	}
+
+	if (strcmp(str, "sqrt") == 0) {
+		debug("Found sqrt");
+		state->in_sqrt++;
+		//if (!push_unit(state))
+		//	return RS_ERROR;
+		return RS_HANDLED;
+	}
+
 	debug("not special!");
 	return RS_NOT_MINE;
 }
@@ -211,9 +273,9 @@ static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
 	return true;
 }
 
-static enum result handle_unit(const char *str, unit_t *unit, struct parser_state *state)
+static enum result handle_unit(const char *str, struct parser_state *state)
 {
-	assert(str); assert(unit); assert(state);
+	assert(str); assert(state);
 	debug("Parse item: '%s'", str);
 
 	// Split symbol and exponent
@@ -257,17 +319,17 @@ static enum result handle_unit(const char *str, unit_t *unit, struct parser_stat
 		return RS_ERROR;
 
 	// And add the definitions
-	add_unit(unit, rule,  exp);
-	unit->factor *= _pown(prefix, exp);
+	add_unit(state->unit, rule,  exp);
+	state->unit->factor *= _pown(prefix, exp);
 
 	return RS_HANDLED;
 }
 
-static bool handle_item(const char *item, unit_t *unit, struct parser_state *state)
+static bool handle_item(const char *item, struct parser_state *state)
 {
 	HANDLE_RESULT(handle_special(item, state));
-	HANDLE_RESULT(handle_factor(item, unit, state));
-	HANDLE_RESULT(handle_unit(item, unit, state));
+	HANDLE_RESULT(handle_factor(item, state));
+	HANDLE_RESULT(handle_unit(item, state));
 	ERROR("Unknown item type for item '%s'", item);
 	return false;
 }
@@ -282,8 +344,11 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 
 	struct parser_state state;
 	state.sign = 1;
+	state.in_sqrt = 0;
+	state.unit = &state.ustack[0];
+	state.spos = 0;
 
-	init_unit(unit);
+	init_unit(state.unit);
 
 	size_t len = strlen(str);
 	size_t start = 0;
@@ -316,11 +381,13 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		debug("Item is '%s'", this_item);
 
 		// and handle it
-		if (!handle_item(this_item, unit, &state))
+		if (!handle_item(this_item, &state))
 			return false;
 
 		start = end;
 	} while (start < len);
+
+	copy_unit(&state.ustack[0], unit);
 
 	return true;
 }

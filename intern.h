@@ -20,6 +20,14 @@ UL_LINKAGE void _ul_debug(const char *fmt, ...);
 UL_LINKAGE void _ul_set_error(const char *func, int line, const char *fmt, ...);
 #define ERROR(msg, ...) _ul_set_error(__func__, __LINE__, msg, ##__VA_ARGS__)
 
+#define DBG_UNIT_HDR "  m  kg   s   A    K   M  Cd (L) - Factor"
+
+#define DBG_UNIT_FMT \
+	"%3d %3d %3d %3d  %3d %3d %3d %3d - " N_FMT
+
+#define DBG_UNIT_ARGS(u) \
+	(u)->exps[0], (u)->exps[1], (u)->exps[2], (u)->exps[3], (u)->exps[4], (u)->exps[5], (u)->exps[6], (u)->exps[7], (u)->factor
+
 UL_LINKAGE const char *_ul_reduce(const unit_t *unit);
 
 UL_LINKAGE bool _ul_init_parser(void);
