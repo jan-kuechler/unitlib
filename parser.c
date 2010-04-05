@@ -10,6 +10,7 @@
 // My string.h is missing strdup so place it here.
 char *strdup(const char *s1);
 
+// A unit conversion rule
 typedef struct rule
 {
 	const char *symbol;
@@ -18,6 +19,7 @@ typedef struct rule
 	struct rule *next;
 } rule_t;
 
+// A unit prefix (like mili)
 typedef struct prefix
 {
 	char symbol;
@@ -29,33 +31,36 @@ typedef struct prefix
 static rule_t *rules = NULL;
 // The base rules
 static rule_t base_rules[NUM_BASE_UNITS];
-
+// A list of all prefixes
 static prefix_t *prefixes = NULL;
 
+// Symbolic definition for the first dynamic allocated rule
+// valid after _ul_init_parser() ist called
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
-enum { USTACK_SIZE = 16, };
+enum {
+	USTACK_SIZE = 16,     // Size of the parser state stack
+	MAX_SYM_SIZE = 128,   // Maximal size of a symbol
+	MAX_ITEM_SIZE = 1024, // Maximal size of a composed item
+};
 
+// The state of an ongoing parse
 struct parser_state
 {
-	int sign;
-	unit_t *unit;
-	unit_t ustack[USTACK_SIZE];
-	size_t spos;
-	bool is_sqrt[USTACK_SIZE];
-	bool need_bracket;
-	char was_operator;
+	int sign;                   // Exp sign
+	unit_t *unit;               // Current unit
+	unit_t ustack[USTACK_SIZE]; // Stack of units
+	size_t spos;                // Stackpos
+	bool is_sqrt[USTACK_SIZE];  // Sqrt flags
+	bool need_bracket;          // true if the next item has to be an opening bracket
+	char was_operator;          // true if the last item was an operator ('*' or '/')
 };
 
-enum {
-	MAX_SYM_SIZE = 128,
-	MAX_ITEM_SIZE = 1024,
-};
-
+// Result of a handle_* call
 enum result {
-	RS_ERROR,
-	RS_HANDLED,
-	RS_NOT_MINE,
+	RS_ERROR,    // Something was wrong
+	RS_HANDLED,  // The job is done
+	RS_NOT_MINE, // Not my business
 };
 #define HANDLE_RESULT(marg_rs) \
 	do { \
@@ -83,6 +88,7 @@ static rule_t *last_rule(void)
 	return NULL;
 }
 
+// Returns the rule to a symbol
 static rule_t *get_rule(const char *sym)
 {
 	assert(sym);
@@ -93,6 +99,7 @@ static rule_t *get_rule(const char *sym)
 	return NULL;
 }
 
+// Returns the last prefix in the list
 static prefix_t *last_prefix(void)
 {
 	prefix_t *cur = prefixes;
@@ -104,6 +111,7 @@ static prefix_t *last_prefix(void)
 	return NULL;
 }
 
+// Returns the prefix definition to a character
 static prefix_t *get_prefix(char sym)
 {
 	for (prefix_t *cur = prefixes; cur; cur = cur->next) {
@@ -113,6 +121,7 @@ static prefix_t *get_prefix(char sym)
 	return NULL;
 }
 
+// Skips all spaces at the beginning of the string
 static size_t skipspace(const char *text, size_t start)
 {
 	assert(text);
@@ -122,6 +131,7 @@ static size_t skipspace(const char *text, size_t start)
 	return i;
 }
 
+// Returns the position of the next space in the string
 static size_t nextspace(const char *text, size_t start)
 {
 	assert(text);
@@ -142,6 +152,7 @@ static inline bool issplit(char c)
 	return splitchars[(int)c];
 }
 
+// Returns the position of the next split character or space in the string
 static size_t nextsplit(const char *text, size_t start)
 {
 	assert(text);
