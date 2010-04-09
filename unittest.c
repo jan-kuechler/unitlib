@@ -245,6 +245,14 @@ TEST_SUITE(parser)
 		END_TEST
 
 		TEST
+			unit_t correct = MAKE_UNIT(1.0, U_METER, 2, U_SECOND, 2);
+			unit_t u;
+
+			CHECK(ul_parse("(m s)^2", &u));
+			CHECK(ul_equal(&u, &correct));
+		END_TEST
+
+		TEST
 			unit_t u;
 			CHECK(ul_parse("kg*m^2/(s^4 kg) sqrt(A^2 K^4)", &u));
 		END_TEST

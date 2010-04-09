@@ -196,7 +196,7 @@ static bool push_unit(struct parser_state *state)
 	return true;
 }
 
-static bool pop_unit(struct parser_state *state)
+static bool pop_unit(struct parser_state *state, int exp)
 {
 	if (state->spos == 0) {
 		ERROR("Internal error: Stack missmatch!");
@@ -211,15 +211,62 @@ static bool pop_unit(struct parser_state *state)
 	if (sqrt && !ul_sqrt(top))
 			return false;
 
-	add_unit(&CURRENT(unit,state), top, 1);
+	exp *= CURRENT(sign,state);
+
+	add_unit(&CURRENT(unit,state), top, exp);
 	return true;
+}
+
+static enum result sym_and_exp(const char *str, char *sym, int *exp)
+{
+	assert(str); assert(sym); assert(exp);
+
+	size_t symend = 0;
+
+	while (str[symend] && str[symend] != '^')
+		symend++;
+
+	if (symend >= MAX_SYM_SIZE) {
+		ERROR("Symbol to long");
+		return RS_ERROR;
+	}
+	strncpy(sym, str, symend);
+	sym[symend] = '\0';
+
+	*exp = 1;
+	enum result rs = RS_NOT_MINE;
+
+	if (str[symend]) {
+		// The '^' should not be the last value of the string
+		if (!str[symend+1]) {
+			ERROR("Missing exponent after '^' while parsing '%s'", str);
+			return RS_ERROR;
+		}
+
+		// Parse the exponent
+		char *endptr = NULL;
+		*exp = strtol(str+symend+1, &endptr, 10);
+
+		// the whole exp string was valid only if *endptr is '\0'
+		if (endptr && *endptr) {
+			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
+			return RS_ERROR;
+		}
+		rs = RS_HANDLED;
+	}
+	return rs;
 }
 
 static enum result handle_bracket_end(const char *str, struct parser_state *state)
 {
-	(void)str;
-	// TODO: add exp support
-	if (!pop_unit(state))
+	char sym[MAX_SYM_SIZE];
+	int exp = 1;
+
+	if (sym_and_exp(str, sym, &exp) == RS_ERROR) {
+		return RS_ERROR;
+	}
+
+	if (!pop_unit(state, exp))
 		return RS_ERROR;
 	return RS_HANDLED;
 }
@@ -237,7 +284,7 @@ static enum result handle_special(const char *str, struct parser_state *state)
 		return false;
 	}
 
-	if (len == 1) {
+	if (len == 1 || str[0] == ')') {
 		switch (str[0]) {
 
 		case '/':
@@ -331,36 +378,10 @@ static enum result handle_unit(const char *str, struct parser_state *state)
 	char symbol[MAX_SYM_SIZE];
 	int exp = 1;
 
-	size_t symend = 0;
-	while (str[symend] && str[symend] != '^')
-		symend++;
-
-	if (symend >= MAX_SYM_SIZE) {
-		ERROR("Symbol to long");
+	if (sym_and_exp(str, symbol, &exp) == RS_ERROR) {
 		return RS_ERROR;
 	}
-	strncpy(symbol, str, symend);
-	symbol[symend] = '\0';
-
-	if (str[symend]) {
-		// The '^' should not be the last value of the string
-		if (!str[symend+1]) {
-			ERROR("Missing exponent after '^' while parsing '%s'", str);
-			return RS_ERROR;
-		}
-
-		// Parse the exponent
-		char *endptr = NULL;
-		exp = strtol(str+symend+1, &endptr, 10);
-
-		// the whole exp string was valid only if *endptr is '\0'
-		if (endptr && *endptr) {
-			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
-			return RS_ERROR;
-		}
-	}
-	debug("Exponent is %d", exp);
-	exp *= CURRENT(sign,state);
+	exp *= CURRENT(sign, state);
 
 	unit_t *rule;
 	ul_number prefix;
@@ -409,6 +430,12 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		// And find the next whitespace
 		size_t end = nextsplit(str, start);
 
+		// HACK
+		if ((str[start] == ')') && (str[start+1] == '^')) {
+			debug("Exp hack!");
+			end = nextsplit(str, start+1);
+		}
+
 		debug("Start: %d", start);
 		debug("End:   %d", end);
 
@@ -417,6 +444,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 				break;
 			end++; // this one is a single splitchar
 		}
+
 		// sanity check
 		if ((end - start) > MAX_ITEM_SIZE ) {
 			ERROR("Item too long");
