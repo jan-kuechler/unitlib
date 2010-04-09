@@ -39,22 +39,31 @@ static prefix_t *prefixes = NULL;
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
 enum {
-	USTACK_SIZE = 16,     // Size of the parser state stack
+	STACK_SIZE = 16,     // Size of the parser state stack
 	MAX_SYM_SIZE = 128,   // Maximal size of a symbol
 	MAX_ITEM_SIZE = 1024, // Maximal size of a composed item
+};
+
+// State in ()
+struct substate
+{
+	unit_t unit;
+	bool   sqrt;
+	int    sign;
 };
 
 // The state of an ongoing parse
 struct parser_state
 {
-	int sign;                   // Exp sign
-	unit_t *unit;               // Current unit
-	unit_t ustack[USTACK_SIZE]; // Stack of units
-	size_t spos;                // Stackpos
-	bool is_sqrt[USTACK_SIZE];  // Sqrt flags
-	bool need_bracket;          // true if the next item has to be an opening bracket
-	char was_operator;          // true if the last item was an operator ('*' or '/')
+	// state stack and current position
+	size_t spos;
+	struct substate stack[STACK_SIZE];
+
+	bool brkt;  // true if the next item has to be an opening bracket
+	char wasop; // true if the last item was an operator ('*' or '/')
+	bool nextsqrt; // true if the next substate is in sqrt
 };
+#define CURRENT(what,state) (state)->stack[(state)->spos].what
 
 // Result of a handle_* call
 enum result {
@@ -162,30 +171,28 @@ static size_t nextsplit(const char *text, size_t start)
 	return i;
 }
 
-static enum result handle_factor(const char *str, struct parser_state *state)
+static void init_substate(struct substate *sst)
 {
-	assert(str); assert(state);
-	char *endptr;
-	ul_number f = _strton(str, &endptr);
-	if (endptr && *endptr) {
-		return RS_NOT_MINE;
-	}
-	debug("'%s' is a factor", str);
-	state->unit->factor *= _pown(f, state->sign);
-	return RS_HANDLED;
+	sst->sign = 1;
+	init_unit(&sst->unit);
+	sst->sqrt = false;
 }
 
 static bool push_unit(struct parser_state *state)
 {
 	state->spos++;
 	debug("Push: %u -> %u", state->spos-1, state->spos);
-	if (state->spos >= USTACK_SIZE) {
+	if (state->spos >= STACK_SIZE) {
 		ERROR("Maximal nesting level exceeded.");
 		return false;
 	}
 
-	state->unit = &state->ustack[state->spos];
-	init_unit(state->unit);
+	init_substate(&state->stack[state->spos]);
+
+	if (state->nextsqrt) {
+		CURRENT(sqrt,state) = true;
+		state->nextsqrt = false;
+	}
 	return true;
 }
 
@@ -195,32 +202,23 @@ static bool pop_unit(struct parser_state *state)
 		ERROR("Internal error: Stack missmatch!");
 		return false;
 	}
-	bool sqrt = state->is_sqrt[state->spos];
-	state->is_sqrt[state->spos] = false;
+	bool sqrt = CURRENT(sqrt, state);
+	CURRENT(sqrt, state) = false;
 
-	unit_t *top = state->unit;
+	unit_t *top = &CURRENT(unit, state);
 	state->spos--;
 
 	if (sqrt && !ul_sqrt(top))
 			return false;
 
-	//debug("Pop: %u -> %u", state->spos+1, state->spos);
-	//debug("Pop: %p -> %p (%p)", top, &state->ustack[state->spos], state->unit);
-	debug("is_sqrt flag is set.");
-	//debug("Units: top, top-1, result");
-	//debug(DBG_UNIT_HDR);
-	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(top));
-	state->unit = &state->ustack[state->spos];
-	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
-	add_unit(state->unit, top, 1);
-	//debug(DBG_UNIT_FMT, DBG_UNIT_ARGS(state->unit));
+	add_unit(&CURRENT(unit,state), top, 1);
 	return true;
 }
 
 static enum result handle_bracket_end(const char *str, struct parser_state *state)
 {
 	(void)str;
-	// TODO: add exp and sqrt support
+	// TODO: add exp support
 	if (!pop_unit(state))
 		return RS_ERROR;
 	return RS_HANDLED;
@@ -234,7 +232,7 @@ static enum result handle_special(const char *str, struct parser_state *state)
 
 	size_t len = strlen(str);
 
-	if (state->need_bracket && (len > 1 || str[0] != '(')) {
+	if (state->brkt && (len > 1 || str[0] != '(')) {
 		ERROR("Opening bracket expected after sqrt!");
 		return false;
 	}
@@ -243,42 +241,57 @@ static enum result handle_special(const char *str, struct parser_state *state)
 		switch (str[0]) {
 
 		case '/':
-			state->sign *= -1;
+			CURRENT(sign, state) *= -1;
 			// big bad fallthrough
 			// * has no effect, and so the error handling
 			// code is not doubled
 		case '*':
-			if (state->was_operator) {
-				ERROR("Cannot have %c right after %c.", str[0], state->was_operator);
+			if (state->wasop) {
+				ERROR("Cannot have %c right after %c.", str[0], state->wasop);
 				return RS_ERROR;
 			}
-			state->was_operator = str[0];
+			state->wasop = str[0];
 			return RS_HANDLED;
 
 		case '(':
-			state->was_operator = '\0';
-			state->need_bracket = false;
+			state->wasop = '\0';
+			state->brkt = false;
 			if (!push_unit(state))
 				return RS_ERROR;
 			return RS_HANDLED;
 
 		case ')':
-			state->was_operator = '\0';
+			state->wasop = '\0';
 			return handle_bracket_end(str, state);
 		}
 	}
-	state->was_operator = '\0';
+	state->wasop = '\0';
 
 	if (strcmp(str, "sqrt") == 0) {
 		debug("Found sqrt");
-		if (state->spos + 1 < USTACK_SIZE)
-			state->is_sqrt[state->spos+1] = true;
-		state->need_bracket = true;
+		if (state->spos + 1 < STACK_SIZE)
+			state->nextsqrt = true;
+		state->brkt = true;
 		return RS_HANDLED;
 	}
 
 	debug("not special!");
 	return RS_NOT_MINE;
+}
+
+static enum result handle_factor(const char *str, struct parser_state *state)
+{
+	assert(str); assert(state);
+	char *endptr;
+	ul_number f = _strton(str, &endptr);
+	if (endptr && *endptr) {
+		return RS_NOT_MINE;
+	}
+	debug("'%s' is a factor", str);
+
+	CURRENT(unit,state).factor *= _pown(f, CURRENT(sign,state));
+
+	return RS_HANDLED;
 }
 
 static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
@@ -347,7 +360,7 @@ static enum result handle_unit(const char *str, struct parser_state *state)
 		}
 	}
 	debug("Exponent is %d", exp);
-	exp *= state->sign;
+	exp *= CURRENT(sign,state);
 
 	unit_t *rule;
 	ul_number prefix;
@@ -355,8 +368,8 @@ static enum result handle_unit(const char *str, struct parser_state *state)
 		return RS_ERROR;
 
 	// And add the definitions
-	add_unit(state->unit, rule,  exp);
-	state->unit->factor *= _pown(prefix, exp);
+	add_unit(&CURRENT(unit,state), rule,  exp);
+	CURRENT(unit,state).factor *= _pown(prefix, exp);
 
 	return RS_HANDLED;
 }
@@ -379,15 +392,12 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 	debug("Parse unit: '%s'", str);
 
 	struct parser_state state = {
-		.sign = 1,
-		.is_sqrt = {false},
-		.need_bracket = false,
-		.was_operator = '\0',
-		.spos = 0,
+		.spos  = 0,
+		.brkt  = false,
+		.wasop = '\0',
+		.nextsqrt = false,
 	};
-	state.unit = &state.ustack[0];
-
-	init_unit(state.unit);
+	init_substate(&state.stack[0]);
 
 	size_t len = strlen(str);
 	size_t start = 0;
@@ -431,7 +441,7 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		return false;
 	}
 
-	copy_unit(&state.ustack[0], unit);
+	copy_unit(&state.stack[0].unit, unit);
 
 	return true;
 }
