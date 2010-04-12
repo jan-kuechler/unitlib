@@ -11,7 +11,7 @@
 #include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
-#define UL_VERSION   "0.4b3"
+#define UL_VERSION   "0.4b5"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
 #ifdef __cplusplus
@@ -19,14 +19,7 @@
 #else
 #define UL_LINKAGE
 #endif
-
-//#if defined(UL_EXPORT_DLL)
-//#define UL_API UL_LINKAGE __declspec(dllexport) __stdcall
-//#elif defined(UL_IMPORT_DLL)
-//#define UL_API UL_LINKAGE __declspec(dllimport) __stdcall
-//#else
 #define UL_API UL_LINKAGE
-//#endif
 
 typedef enum base_unit
 {

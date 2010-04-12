@@ -10,6 +10,7 @@
 // My string.h is missing strdup so place it here.
 char *strdup(const char *s1);
 
+// A unit conversion rule
 typedef struct rule
 {
 	const char *symbol;
@@ -18,6 +19,7 @@ typedef struct rule
 	struct rule *next;
 } rule_t;
 
+// A unit prefix (like mili)
 typedef struct prefix
 {
 	char symbol;
@@ -29,20 +31,57 @@ typedef struct prefix
 static rule_t *rules = NULL;
 // The base rules
 static rule_t base_rules[NUM_BASE_UNITS];
-
+// A list of all prefixes
 static prefix_t *prefixes = NULL;
 
+// Symbolic definition for the first dynamic allocated rule
+// valid after _ul_init_parser() ist called
 #define dynamic_rules (base_rules[NUM_BASE_UNITS-1].next)
 
-struct parser_state
-{
-	int sign;
+enum {
+	STACK_SIZE = 16,     // Size of the parser state stack
+	MAX_SYM_SIZE = 128,   // Maximal size of a symbol
+	MAX_ITEM_SIZE = 1024, // Maximal size of a composed item
 };
 
-enum {
-	MAX_SYM_SIZE = 128,
-	MAX_ITEM_SIZE = 1024,
+// State in ()
+struct substate
+{
+	unit_t unit;
+	bool   sqrt;
+	int    sign;
 };
+
+// The state of an ongoing parse
+struct parser_state
+{
+	// state stack and current position
+	size_t spos;
+	struct substate stack[STACK_SIZE];
+
+	bool brkt;  // true if the next item has to be an opening bracket
+	char wasop; // true if the last item was an operator ('*' or '/')
+	bool nextsqrt; // true if the next substate is in sqrt
+};
+#define CURRENT(what,state) (state)->stack[(state)->spos].what
+
+// Result of a handle_* call
+enum result {
+	RS_ERROR,    // Something was wrong
+	RS_HANDLED,  // The job is done
+	RS_NOT_MINE, // Not my business
+};
+#define HANDLE_RESULT(marg_rs) \
+	do { \
+		enum result macro_rs = marg_rs; \
+		if (macro_rs == RS_ERROR) { \
+			return false; \
+		} \
+		if (macro_rs == RS_HANDLED) { \
+			return true; \
+		} \
+		assert(macro_rs == RS_NOT_MINE); \
+	} while (0);
 
 // Returns the last rule in the list
 static rule_t *last_rule(void)
@@ -58,6 +97,7 @@ static rule_t *last_rule(void)
 	return NULL;
 }
 
+// Returns the rule to a symbol
 static rule_t *get_rule(const char *sym)
 {
 	assert(sym);
@@ -68,6 +108,7 @@ static rule_t *get_rule(const char *sym)
 	return NULL;
 }
 
+// Returns the last prefix in the list
 static prefix_t *last_prefix(void)
 {
 	prefix_t *cur = prefixes;
@@ -79,6 +120,7 @@ static prefix_t *last_prefix(void)
 	return NULL;
 }
 
+// Returns the prefix definition to a character
 static prefix_t *get_prefix(char sym)
 {
 	for (prefix_t *cur = prefixes; cur; cur = cur->next) {
@@ -88,6 +130,7 @@ static prefix_t *get_prefix(char sym)
 	return NULL;
 }
 
+// Skips all spaces at the beginning of the string
 static size_t skipspace(const char *text, size_t start)
 {
 	assert(text);
@@ -97,6 +140,7 @@ static size_t skipspace(const char *text, size_t start)
 	return i;
 }
 
+// Returns the position of the next space in the string
 static size_t nextspace(const char *text, size_t start)
 {
 	assert(text);
@@ -106,49 +150,195 @@ static size_t nextspace(const char *text, size_t start)
 	return i;
 }
 
-static bool try_parse_factor(const char *str, unit_t *unit, struct parser_state *state)
+static bool splitchars[256] = {
+	['*'] = true,
+	['/'] = true,
+	['('] = true,
+	[')'] = true,
+};
+static inline bool issplit(char c)
 {
-	assert(str); assert(unit); assert(state);
-	char *endptr;
-	ul_number f = _strton(str, &endptr);
-	if (endptr && *endptr) {
-		debug("'%s' is not a factor", str);
+	return splitchars[(int)c];
+}
+
+// Returns the position of the next split character or space in the string
+static size_t nextsplit(const char *text, size_t start)
+{
+	assert(text);
+	size_t i = start;
+	while (text[i] && !(isspace(text[i]) || issplit(text[i])))
+		i++;
+	return i;
+}
+
+static void init_substate(struct substate *sst)
+{
+	sst->sign = 1;
+	init_unit(&sst->unit);
+	sst->sqrt = false;
+}
+
+static bool push_unit(struct parser_state *state)
+{
+	state->spos++;
+	debug("Push: %u -> %u", state->spos-1, state->spos);
+	if (state->spos >= STACK_SIZE) {
+		ERROR("Maximal nesting level exceeded.");
 		return false;
 	}
-	unit->factor *= _pown(f, state->sign);
+
+	init_substate(&state->stack[state->spos]);
+
+	if (state->nextsqrt) {
+		CURRENT(sqrt,state) = true;
+		state->nextsqrt = false;
+	}
 	return true;
 }
 
-static bool is_special(const char *str)
+static bool pop_unit(struct parser_state *state, int exp)
 {
-	assert(str);
-	if (strlen(str) == 1) {
-		switch (str[0]) {
-		case '*':
-			// shall be ignored
-			return true;
-		case '/':
-			// change sign
-			return true;
-		}
+	if (state->spos == 0) {
+		ERROR("Internal error: Stack missmatch!");
+		return false;
 	}
-	return false;
+	bool sqrt = CURRENT(sqrt, state);
+	CURRENT(sqrt, state) = false;
+
+	unit_t *top = &CURRENT(unit, state);
+	state->spos--;
+
+	if (sqrt && !ul_sqrt(top))
+			return false;
+
+	exp *= CURRENT(sign,state);
+
+	add_unit(&CURRENT(unit,state), top, exp);
+	return true;
 }
 
-static bool handle_special(const char *str, struct parser_state *state)
+static enum result sym_and_exp(const char *str, char *sym, int *exp)
+{
+	assert(str); assert(sym); assert(exp);
+
+	size_t symend = 0;
+
+	while (str[symend] && str[symend] != '^')
+		symend++;
+
+	if (symend >= MAX_SYM_SIZE) {
+		ERROR("Symbol to long");
+		return RS_ERROR;
+	}
+	strncpy(sym, str, symend);
+	sym[symend] = '\0';
+
+	*exp = 1;
+	enum result rs = RS_NOT_MINE;
+
+	if (str[symend]) {
+		// The '^' should not be the last value of the string
+		if (!str[symend+1]) {
+			ERROR("Missing exponent after '^' while parsing '%s'", str);
+			return RS_ERROR;
+		}
+
+		// Parse the exponent
+		char *endptr = NULL;
+		*exp = strtol(str+symend+1, &endptr, 10);
+
+		// the whole exp string was valid only if *endptr is '\0'
+		if (endptr && *endptr) {
+			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
+			return RS_ERROR;
+		}
+		rs = RS_HANDLED;
+	}
+	return rs;
+}
+
+static enum result handle_bracket_end(const char *str, struct parser_state *state)
+{
+	char sym[MAX_SYM_SIZE];
+	int exp = 1;
+
+	if (sym_and_exp(str, sym, &exp) == RS_ERROR) {
+		return RS_ERROR;
+	}
+
+	if (!pop_unit(state, exp))
+		return RS_ERROR;
+	return RS_HANDLED;
+}
+
+static enum result handle_special(const char *str, struct parser_state *state)
 {
 	assert(str); assert(state);
-	switch (str[0]) {
-	case '*':
-		// ignore
-		return true;
 
-	case '/':
-		state->sign *= -1;
-		return true;
+	debug("handle_special(%s)", str);
+
+	size_t len = strlen(str);
+
+	if (state->brkt && (len > 1 || str[0] != '(')) {
+		ERROR("Opening bracket expected after sqrt!");
+		return false;
 	}
-	ERROR("Internal error: is_special/handle_special missmatch for '%s'.", str);
-	return false;
+
+	if (len == 1 || str[0] == ')') {
+		switch (str[0]) {
+
+		case '/':
+			CURRENT(sign, state) *= -1;
+			// big bad fallthrough
+			// * has no effect, and so the error handling
+			// code is not doubled
+		case '*':
+			if (state->wasop) {
+				ERROR("Cannot have %c right after %c.", str[0], state->wasop);
+				return RS_ERROR;
+			}
+			state->wasop = str[0];
+			return RS_HANDLED;
+
+		case '(':
+			state->wasop = '\0';
+			state->brkt = false;
+			if (!push_unit(state))
+				return RS_ERROR;
+			return RS_HANDLED;
+
+		case ')':
+			state->wasop = '\0';
+			return handle_bracket_end(str, state);
+		}
+	}
+	state->wasop = '\0';
+
+	if (strcmp(str, "sqrt") == 0) {
+		debug("Found sqrt");
+		if (state->spos + 1 < STACK_SIZE)
+			state->nextsqrt = true;
+		state->brkt = true;
+		return RS_HANDLED;
+	}
+
+	debug("not special!");
+	return RS_NOT_MINE;
+}
+
+static enum result handle_factor(const char *str, struct parser_state *state)
+{
+	assert(str); assert(state);
+	char *endptr;
+	ul_number f = _strton(str, &endptr);
+	if (endptr && *endptr) {
+		return RS_NOT_MINE;
+	}
+	debug("'%s' is a factor", str);
+
+	CURRENT(unit,state).factor *= _pown(f, CURRENT(sign,state));
+
+	return RS_HANDLED;
 }
 
 static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
@@ -179,56 +369,39 @@ static bool unit_and_prefix(const char *sym, unit_t **unit, ul_number *prefix)
 	return true;
 }
 
-static bool parse_item(const char *str, unit_t *unit, struct parser_state *state)
+static enum result handle_unit(const char *str, struct parser_state *state)
 {
-	assert(str); assert(unit); assert(state);
+	assert(str); assert(state);
 	debug("Parse item: '%s'", str);
 
 	// Split symbol and exponent
 	char symbol[MAX_SYM_SIZE];
 	int exp = 1;
 
-	size_t symend = 0;
-	while (str[symend] && str[symend] != '^')
-		symend++;
-
-	if (symend >= MAX_SYM_SIZE) {
-		ERROR("Symbol to long");
-		return false;
+	if (sym_and_exp(str, symbol, &exp) == RS_ERROR) {
+		return RS_ERROR;
 	}
-	strncpy(symbol, str, symend);
-	symbol[symend] = '\0';
-
-	if (str[symend]) {
-		// The '^' should not be the last value of the string
-		if (!str[symend+1]) {
-			ERROR("Missing exponent after '^' while parsing '%s'", str);
-			return false;
-		}
-
-		// Parse the exponent
-		char *endptr = NULL;
-		exp = strtol(str+symend+1, &endptr, 10);
-
-		// the whole exp string was valid only if *endptr is '\0'
-		if (endptr && *endptr) {
-			ERROR("Invalid exponent at char '%c' while parsing '%s'", *endptr, str);
-			return false;
-		}
-	}
-	debug("Exponent is %d", exp);
-	exp *= state->sign;
+	exp *= CURRENT(sign, state);
 
 	unit_t *rule;
 	ul_number prefix;
 	if (!unit_and_prefix(symbol, &rule, &prefix))
-		return false;
+		return RS_ERROR;
 
 	// And add the definitions
-	add_unit(unit, rule,  exp);
-	unit->factor *= _pown(prefix, exp);
+	add_unit(&CURRENT(unit,state), rule,  exp);
+	CURRENT(unit,state).factor *= _pown(prefix, exp);
 
-	return true;
+	return RS_HANDLED;
+}
+
+static bool handle_item(const char *item, struct parser_state *state)
+{
+	HANDLE_RESULT(handle_special(item, state)); // special has to be the first one!
+	HANDLE_RESULT(handle_factor(item, state));
+	HANDLE_RESULT(handle_unit(item, state));
+	ERROR("Unknown item type for item '%s'", item);
+	return false;
 }
 
 UL_API bool ul_parse(const char *str, unit_t *unit)
@@ -239,10 +412,13 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 	}
 	debug("Parse unit: '%s'", str);
 
-	struct parser_state state;
-	state.sign = 1;
-
-	init_unit(unit);
+	struct parser_state state = {
+		.spos  = 0,
+		.brkt  = false,
+		.wasop = '\0',
+		.nextsqrt = false,
+	};
+	init_substate(&state.stack[0]);
 
 	size_t len = strlen(str);
 	size_t start = 0;
@@ -252,11 +428,23 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		// Skip leading whitespaces
 		start = skipspace(str, start);
 		// And find the next whitespace
-		size_t end = nextspace(str, start);
+		size_t end = nextsplit(str, start);
 
-		if (end == start) {// End of string
-			break;
+		// HACK
+		if ((str[start] == ')') && (str[start+1] == '^')) {
+			debug("Exp hack!");
+			end = nextsplit(str, start+1);
 		}
+
+		debug("Start: %d", start);
+		debug("End:   %d", end);
+
+		if (end == start) {
+			if (end == len) // end of string
+				break;
+			end++; // this one is a single splitchar
+		}
+
 		// sanity check
 		if ((end - start) > MAX_ITEM_SIZE ) {
 			ERROR("Item too long");
@@ -267,21 +455,21 @@ UL_API bool ul_parse(const char *str, unit_t *unit)
 		strncpy(this_item, str+start, end-start);
 		this_item[end-start] = '\0';
 
-		// and parse it
-		if (is_special(this_item)) {
-			if (!handle_special(this_item, &state))
-				return false;
-		}
-		else if (try_parse_factor(this_item, unit, &state)) {
-			// nothing todo
-		}
-		else {
-			if (!parse_item(this_item, unit, &state))
-				return false;
-		}
+		debug("Item is '%s'", this_item);
 
-		start = end + 1;
+		// and handle it
+		if (!handle_item(this_item, &state))
+			return false;
+
+		start = end;
 	} while (start < len);
+
+	if (state.spos != 0) {
+		ERROR("Bracket missmatch");
+		return false;
+	}
+
+	copy_unit(&state.stack[0].unit, unit);
 
 	return true;
 }
@@ -562,20 +750,20 @@ static bool init_prefixes(void)
 {
 	debug("Initializing prefixes");
 	if (!add_prefix('Y', 1e24))  return false;
-	if (!add_prefix('Z', 1e21))  return false; //zetta
-	if (!add_prefix('E', 1e18))  return false; //exa
-	if (!add_prefix('P', 1e15))  return false; //peta
-	if (!add_prefix('T', 1e12))  return false; //tera
+	if (!add_prefix('Z', 1e21))  return false; // zetta
+	if (!add_prefix('E', 1e18))  return false; // exa
+	if (!add_prefix('P', 1e15))  return false; // peta
+	if (!add_prefix('T', 1e12))  return false; // tera
 	if (!add_prefix('G', 1e9))   return false; // giga
 	if (!add_prefix('M', 1e6))   return false; // mega
 	if (!add_prefix('k', 1e3))   return false; // kilo
 	if (!add_prefix('h', 1e2))   return false; // hecto
 	// missing: da - deca
-	if (!add_prefix('d', 1e-1))  return false; //deci
-	if (!add_prefix('c', 1e-2))  return false; //centi
-	if (!add_prefix('m', 1e-3))  return false; //milli
-	if (!add_prefix('u', 1e-6))  return false; //micro
-	if (!add_prefix('n', 1e-9))  return false; //nano
+	if (!add_prefix('d', 1e-1))  return false; // deci
+	if (!add_prefix('c', 1e-2))  return false; // centi
+	if (!add_prefix('m', 1e-3))  return false; // milli
+	if (!add_prefix('u', 1e-6))  return false; // micro
+	if (!add_prefix('n', 1e-9))  return false; // nano
 	if (!add_prefix('p', 1e-12)) return false; // pico
 	if (!add_prefix('f', 1e-15)) return false; // femto
 	if (!add_prefix('a', 1e-18)) return false; // atto

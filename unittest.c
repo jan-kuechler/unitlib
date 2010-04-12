@@ -85,10 +85,12 @@ TEST_SUITE(parser)
 			unit_t u;
 
 			const char *strings[] = {
-				"5*kg^2",    // need whitespace
 				"5 ** kg^2", // double *
 				"5! * kg^2", // !
 				"5 * kg^2!", // !
+				"sqrt kg^2)", // missing ( after sqrt
+				"( kg^2 m",   // missing )
+				"((((((((((((((((((((((((((((((((((((((((((((((((",
 				NULL
 			};
 
@@ -221,6 +223,40 @@ TEST_SUITE(parser)
 		CHECK(ul_parse("8 kg / 4 s", &test));
 		CHECK(ul_equal(&test, &correct));
 	END_TEST
+
+	GROUP("extended")
+		TEST
+			unit_t kg = MAKE_UNIT(2.0, U_KILOGRAM, 1);
+			unit_t u;
+
+			CHECK(ul_parse("sqrt(4 kg^2)", &u));
+			CHECK(ul_equal(&u, &kg));
+			char buffer[128];
+			ul_snprint(buffer, 128, &u, UL_FMT_PLAIN, 0);
+			FAIL_MSG("Result was: %s", buffer);
+		END_TEST
+
+		TEST
+			unit_t correct = MAKE_UNIT(1.0, U_METER, -1, U_KILOGRAM, 2);
+			unit_t u;
+
+			CHECK(ul_parse("sqrt(kg^2/m^2) kg", &u));
+			CHECK(ul_equal(&u, &correct));
+		END_TEST
+
+		TEST
+			unit_t correct = MAKE_UNIT(1.0, U_METER, 2, U_SECOND, 2);
+			unit_t u;
+
+			CHECK(ul_parse("(m s)^2", &u));
+			CHECK(ul_equal(&u, &correct));
+		END_TEST
+
+		TEST
+			unit_t u;
+			CHECK(ul_parse("kg*m^2/(s^4 kg) sqrt(A^2 K^4)", &u));
+		END_TEST
+	END_GROUP()
 END_TEST_SUITE()
 
 TEST_SUITE(core)
@@ -466,7 +502,8 @@ END_TEST_SUITE()
 
 int main(void)
 {
-	ul_debugging(false);
+	ul_debugging(true);
+	ul_debugout("utest-debug.log", false);
 	if (!ul_init()) {
 		printf("ul_init failed: %s", ul_error());
 		return 1;
@@ -506,7 +543,7 @@ int main(void)
 	  int _this = ++_cid; \
 		if (!(expr)) { \
 			_err++; _fail++; \
-			PRINT(_o, L_NORMAL, "[%s%s-%d-%d] Fail: '%s'\n", _name, _group_name, _id, _this, #expr); \
+			PRINT(_o, L_NORMAL, "[%s%s-%d-%d] (%d) Fail: '%s'\n", _name, _group_name, _id, _this, __LINE__, #expr); \
 			_last = false;\
 			if (_o->autofail) _o->autofail(_name, _id, _this, #expr); \
 		} \
@@ -543,10 +580,12 @@ int main(void)
 	return _fail; }
 
 #define GROUP(name) \
-	{ const char *_group_name = "-" name; int _test_id = 0;
+	do { const char *_group_name = "-" name; int _test_id = 0;
 
 #define END_GROUP() \
-	}
+	} while (0);
+
+#define SKIP_GROUP()	PRINT(_o, L_NORMAL, "[%s%s] skipped.\n", _name, _group_name); break;
 
 // SINGLE TEST
 #define TEST \
