@@ -1,14 +1,18 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "unitlib.h"
 #include <string.h>
+#include <stdlib.h>
+#include "unitlib.h"
 #include "intern.h"
 
 #define UNUSED(var) do{(void)(var);}while(0)
 
 #define UNIT "unit"
 #define CLEANUP "__ul_cleanup"
+
+static char *tostring_buffer = NULL;
+static size_t tostring_buflen = 0;
 
 static void error(lua_State *L)
 {
@@ -71,20 +75,6 @@ static void mult_nu(lua_State *L, ul_number n, unit_t *unit, bool inv)
 	}
 }
 
-//int l_init(lua_State *L)
-//{
-//	if (!ul_init())
-//		error(L);
-//	return 0;
-//}
-
-//int l_quit(lua_State *L)
-//{
-//	UNUSED(L);
-//	ul_quit();
-//	return 0;
-//}
-
 int l_parse(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
@@ -108,13 +98,23 @@ int lm_tostring(lua_State *L)
 {
 	unit_t *unit = luaL_checkudata(L, 1, UNIT);
 
-	// TODO: Find something better than a static buffer
-	static char buffer[4096];
+	size_t len = ul_length(unit, UL_FMT_PLAIN, 0) + 1;
+	if (len > tostring_buflen) {
+		free(tostring_buffer);
+		tostring_buffer = malloc(len);
+		if (!tostring_buffer) {
+			tostring_buflen = 0;
+			lua_pushstring(L, "Failed to allocate memory.");
+			lua_error(L);
+			return 0;
+		}
+		tostring_buflen = len;
+	}
 
-	if (!ul_snprint(buffer, 4096, unit, UL_FMT_PLAIN, 0))
+	if (!ul_snprint(tostring_buffer, tostring_buflen, unit, UL_FMT_PLAIN, 0))
 		error(L);
 
-	lua_pushstring(L, buffer);
+	lua_pushstring(L, tostring_buffer);
 	return 1;
 }
 
@@ -179,6 +179,9 @@ int lm_len(lua_State *L)
 int m_gc(lua_State *L)
 {
 	UNUSED(L);
+	free(tostring_buffer);
+	tostring_buflen = 0;
+	tostring_buffer = NULL;
 	ul_quit();
 	return 0;
 }
