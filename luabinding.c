@@ -94,6 +94,25 @@ int l_parse_rule(lua_State *L)
 	return 0;
 }
 
+int l_debugout(lua_State *L)
+{
+	const char *file = luaL_checkstring(L, 1);
+	bool append = false;
+	if (lua_isboolean(L, 2)) {
+		append = lua_toboolean(L, 2);
+	}
+	ul_debugout(file, append);
+	return 0;
+}
+
+int l_debugging(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TBOOLEAN);
+	bool dbg = lua_toboolean(L, 1);
+	ul_debugging(dbg);
+	return 0;
+}
+
 int lm_tostring(lua_State *L)
 {
 	unit_t *unit = luaL_checkudata(L, 1, UNIT);
@@ -189,10 +208,10 @@ int m_gc(lua_State *L)
 __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 {
 	luaL_Reg lib[] = {
-		//{"init",  l_init},
-		//{"quit",  l_quit},
 		{"parse", l_parse},
 		{"parse_rule", l_parse_rule},
+		{"debugout", l_debugout},
+		{"debugging", l_debugging},
 		{NULL, NULL},
 	};
 
@@ -216,6 +235,9 @@ __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 	luaL_register(L, NULL, cleanup);
 	lua_pop(L, 1);
 
+	/* Setup a proxy object, that is gc'ed when the
+	 * library reference gets out of scope.
+	 * Used for ul_quit() and buffer cleanup */
 	lua_pushstring(L, "__cleanup_proxy");
 	lua_newuserdata(L, 1);
 	luaL_getmetatable(L, CLEANUP);
@@ -226,8 +248,8 @@ __declspec(dllexport) int luaopen_unitlib(lua_State *L)
 	luaL_register(L, NULL, meta);
 	lua_pop(L, 1);
 
-	ul_debugout("lua-unitlib-debug.log", false);
-	ul_debugging(true);
+	//ul_debugout("lua-unitlib-debug.log", false);
+	//ul_debugging(true);
 	ul_init();
 
 	return 1;
