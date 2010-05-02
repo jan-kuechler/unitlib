@@ -11,7 +11,7 @@
 #include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
-#define UL_VERSION   "0.4b5"
+#define UL_VERSION   "0.5"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
 #ifdef __cplusplus
@@ -33,8 +33,6 @@ typedef enum base_unit
 	U_LEMMING, /* Man kann alles in Lemminge umrechnen! */
 	NUM_BASE_UNITS,
 } base_unit_t;
-
-#define U_ANY -1
 
 typedef enum ul_format
 {
