@@ -1,0 +1,36 @@
+# unitlib conversion rules
+
+# Newton
+N = kg m s^-2
+
+# Joule
+J = N m
+
+# Watt
+W = J s^-1
+
+# Pascal
+Pa = N m^-2
+
+# Hertz
+Hz = s^-1
+
+# Volt
+V = W A^-1
+
+# Ohm
+Omega = V A^-1
+
+# Tesla
+T = V s m^-2
+
+# Weber
+Wb = T m^2
+
+# Farad
+F = A s V^-1
+
+# Coulomb
+C = A s
+
+
