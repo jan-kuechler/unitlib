@@ -33,14 +33,14 @@ PREFIX = /usr
 INSTALL_LIB = $(PREFIX)/lib
 INSTALL_HDR = $(PREFIX)/include
 
-OBJFILES = $(INC_DIR)/unitlib.o $(INC_DIR)/parser.o $(INC_DIR)/format.o
+OBJFILES = $(BIN_DIR)/unitlib.o $(BIN_DIR)/parser.o $(BIN_DIR)/format.o
 
 TESTPROG = $(TST_DIR)/test.exe
 SMASHPROG = $(TST_DIR)/smash.exe
 
 UNITTEST = $(TST_DIR)/ultest
 
-.PHONY: test clean allclean
+.PHONY: test clean allclean prepare
 
 all: $(TARGET)
 
@@ -70,22 +70,22 @@ utest: $(UNITTEST)
 smash: $(SMASHPROG)
 	@./$(SMASHPROG)
 
-$(TARGET): $(OBJFILES)
+$(TARGET): prepare $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
 	@$(RANLIB) $(TARGET)
 
-$(DLL): $(SRCFILES) $(HDRFILES) Makefile
+$(DLL): prepare $(SRCFILES) $(HDRFILES) Makefile
 	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--output-def,$(BIN_DIR)/libunit.def
 	lib.exe /DEF:$(BIN_DIR)/libunit.def /OUT:$(BIN_DIR)/libunit.lib /MACHINE:X86
 
-$(INC_DIR)/unitlib.o: $(SRC_DIR)/unitlib.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o $(INC_DIR)/unitlib.o -c $(SRC_DIR)/unitlib.c
+$(BIN_DIR)/unitlib.o: $(SRC_DIR)/unitlib.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(BIN_DIR)/unitlib.o -c $(SRC_DIR)/unitlib.c
 
-$(INC_DIR)/parser.o: $(SRC_DIR)/parser.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o $(INC_DIR)/parser.o -c $(SRC_DIR)/parser.c
+$(BIN_DIR)/parser.o: $(SRC_DIR)/parser.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(BIN_DIR)/parser.o -c $(SRC_DIR)/parser.c
 
-$(INC_DIR)/format.o: $(SRC_DIR)/format.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o $(INC_DIR)/format.o -c $(SRC_DIR)/format.c
+$(BIN_DIR)/format.o: $(SRC_DIR)/format.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(BIN_DIR)/format.o -c $(SRC_DIR)/format.c
 
 $(TESTPROG): $(TARGET) $(TST_DIR)/_test.c
 	@$(CC) -o $(TESTPROG) -g -L. $(TST_DIR)/test.c -lunit
@@ -95,6 +95,9 @@ $(SMASHPROG): $(TARGET) $(TST_DIR)/_test.c
 
 $(UNITTEST): $(TARGET) $(TST_DIR)/unittest.c
 	@$(CC) -std=gnu99 -I$(INC_DIR) -o $(UNITTEST) -L$(BIN_DIR) $(TST_DIR)/unittest.c -lunit
+
+prepare:
+	@if [ ! -d $(BIN_DIR) ]; then mkdir $(BIN_DIR); fi
 
 clean:
 	@rm -f $(OBJFILES)
