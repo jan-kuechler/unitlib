@@ -11,7 +11,7 @@
 #include "unitlib-config.h"
 
 #define UL_NAME      "unitlib"
-#define UL_VERSION   "0.5"
+#define UL_VERSION   "0.5.1"
 #define UL_FULL_NAME UL_NAME "-" UL_VERSION
 
 #ifdef __cplusplus
