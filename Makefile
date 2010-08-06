@@ -4,21 +4,26 @@
 
 MSVC_COMPAT = -mms-bitfields -mno-cygwin
 
+BIN_DIR = bin
+SRC_DIR = src
+INC_DIR = include
+TST_DIR = test
+
 CC = gcc
-CFLAGS = -O2 -std=c99 -Wall -Wextra
+CFLAGS = -O2 -std=c99 -Wall -Wextra -I$(INC_DIR)
 
 AR = ar
 RANLIB = ranlib
 
-TARGET = libunit.a
+SRCFILES = $(SRC_DIR)/unitlib.c $(SRC_DIR)/parser.c $(SRC_DIR)/format.c
+HDRFILES = $(INC_DIR)/unitlib.h $(SRC_DIR)/intern.h $(INC_DIR)/unitlib-config.h
 
-DLL = libunit.dll
-IMPLIB = libunit.lib
+TARGET = $(BIN_DIR)/libunit.a
 
-HEADER = unitlib-config.h unitlib.h
+DLL = $(BIN_DIR)/libunit.dll
+IMPLIB = $(BIN_DIR)/libunit.lib
 
-SRCFILES = unitlib.c parser.c format.c
-HDRFILES = unitlib.h intern.h unitlib-config.h
+HEADER = $(INC_DIR)/unitlib-config.h $(INC_DIR)/unitlib.h
 
 WIN_DLL_INSTALL = /c/Windows
 WIN_LIB_INSTALL = /g/Programmieren/lib
@@ -28,12 +33,12 @@ PREFIX = /usr
 INSTALL_LIB = $(PREFIX)/lib
 INSTALL_HDR = $(PREFIX)/include
 
-OBJFILES = unitlib.o parser.o format.o
+OBJFILES = $(INC_DIR)/unitlib.o $(INC_DIR)/parser.o $(INC_DIR)/format.o
 
-TESTPROG = _test.exe
-SMASHPROG = _smash.exe
+TESTPROG = $(TST_DIR)/test.exe
+SMASHPROG = $(TST_DIR)/smash.exe
 
-UNITTEST = ultest
+UNITTEST = $(TST_DIR)/ultest
 
 .PHONY: test clean allclean
 
@@ -46,58 +51,57 @@ install-dll: dll
 	cp $(DLL) $(WIN_LIB_INSTALL)
 	cp $(IMPLIB) $(WIN_LIB_INSTALL)
 	cp $(HEADER) $(WIN_HDR_INSTALL)
-	
+
 install:
 	cp $(TARGET) $(INSTALL_LIB)
 	cp $(HEADER) $(INSTALL_HDR)
-	
+
 uninstall:
 	rm $(INSTALL_LIB)/$(TARGET)
 	cd $(INSTALL_HDR)
 	rm $(HEADER)
-	
+
 test: $(TESTPROG)
 	@./$(TESTPROG)
-	
+
 utest: $(UNITTEST)
 	@./$(UNITTEST)
-	
+
 smash: $(SMASHPROG)
 	@./$(SMASHPROG)
-	
+
 $(TARGET): $(OBJFILES)
 	@$(AR) rc $(TARGET) $(OBJFILES)
 	@$(RANLIB) $(TARGET)
-	
+
 $(DLL): $(SRCFILES) $(HDRFILES) Makefile
-	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--output-def,libunit.def
-	lib.exe /DEF:libunit.def /OUT:libunit.lib /MACHINE:X86
-	
-unitlib.o: unitlib.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o unitlib.o -c unitlib.c
-	
-parser.o: parser.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o parser.o -c parser.c
-	
-format.o: format.c $(HDRFILES)
-	@$(CC) $(CFLAGS) -o format.o -c format.c
-	
-$(TESTPROG): $(TARGET) _test.c
-	@$(CC) -o $(TESTPROG) -g -L. _test.c -lunit
-	
-$(SMASHPROG): $(TARGET) _test.c
-	@$(CC) -o $(SMASHPROG) -L. -DSMASH _test.c -lunit
-	
-$(UNITTEST): $(TARGET) unittest.c
-	@$(CC) -std=gnu99 -o $(UNITTEST) -L. unittest.c -lunit
-	
+	@$(CC) $(CFLAGS) $(MSVC_COMPAT) -shared -o $(DLL) $(SRCFILES) -Wl,--output-def,$(BIN_DIR)/libunit.def
+	lib.exe /DEF:$(BIN_DIR)/libunit.def /OUT:$(BIN_DIR)/libunit.lib /MACHINE:X86
+
+$(INC_DIR)/unitlib.o: $(SRC_DIR)/unitlib.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(INC_DIR)/unitlib.o -c $(SRC_DIR)/unitlib.c
+
+$(INC_DIR)/parser.o: $(SRC_DIR)/parser.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(INC_DIR)/parser.o -c $(SRC_DIR)/parser.c
+
+$(INC_DIR)/format.o: $(SRC_DIR)/format.c $(HDRFILES)
+	@$(CC) $(CFLAGS) -o $(INC_DIR)/format.o -c $(SRC_DIR)/format.c
+
+$(TESTPROG): $(TARGET) $(TST_DIR)/_test.c
+	@$(CC) -o $(TESTPROG) -g -L. $(TST_DIR)/test.c -lunit
+
+$(SMASHPROG): $(TARGET) $(TST_DIR)/_test.c
+	@$(CC) -o $(SMASHPROG) -L. -DSMASH $(TST_DIR)/test.c -lunit
+
+$(UNITTEST): $(TARGET) $(TST_DIR)/unittest.c
+	@$(CC) -std=gnu99 -I$(INC_DIR) -o $(UNITTEST) -L$(BIN_DIR) $(TST_DIR)/unittest.c -lunit
+
 clean:
 	@rm -f $(OBJFILES)
 	@rm -f $(TESTPROG)
 	@rm -f $(SMASHPROG)
 	@rm -f $(UNITTEST)
-	@rm -f debug.log
-	
+
 allclean: clean
 	@rm -f $(TARGET)
 	@rm -f $(DLL)

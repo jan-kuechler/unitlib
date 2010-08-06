@@ -1,0 +1,1036 @@
+** unitlib - debug log **
+[ul_init] Initializing unitlib....
+[_ul_init_parser] Initializing parser
+[_ul_init_parser] Base rule: 0
+[_ul_init_parser] Base rule: 1
+[_ul_init_parser] Base rule: 2
+[_ul_init_parser] Base rule: 3
+[_ul_init_parser] Base rule: 4
+[_ul_init_parser] Base rule: 5
+[_ul_init_parser] Base rule: 6
+[_ul_init_parser] Base rule: 7
+[_ul_init_parser] Base rules initialized
+[init_prefixes] Initializing prefixes
+[init_prefixes] Prefixes initialized!
+[_ul_init_parser] Parser initalized!
+[ul_init] Init done!
+[ul_parse] Parse unit: 'm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Parse unit: '	
+ kg^2 * m  '
+[ul_parse] Start: 3
+[ul_parse] End:   7
+[ul_parse] Item is 'kg^2'
+[handle_special] handle_special(kg^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg^2'
+[ul_parse] Start: 8
+[ul_parse] End:   8
+[ul_parse] Item is '*'
+[handle_special] handle_special(*)
+[ul_parse] Start: 10
+[ul_parse] End:   11
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Start: 13
+[ul_parse] End:   13
+[ul_parse] Parse unit: '2 Cd 7 s^-1'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '2'
+[handle_special] handle_special(2)
+[handle_special] not special!
+[handle_factor] '2' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Cd'
+[handle_special] handle_special(Cd)
+[handle_special] not special!
+[handle_unit] Parse item: 'Cd'
+[ul_parse] Start: 5
+[ul_parse] End:   6
+[ul_parse] Item is '7'
+[handle_special] handle_special(7)
+[handle_special] not special!
+[handle_factor] '7' is a factor
+[ul_parse] Start: 7
+[ul_parse] End:   11
+[ul_parse] Item is 's^-1'
+[handle_special] handle_special(s^-1)
+[handle_special] not special!
+[handle_unit] Parse item: 's^-1'
+[ul_parse] Parse unit: ''
+[ul_parse] Start: 0
+[ul_parse] End:   0
+[ul_parse] Parse unit: '5 ** kg^2'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   2
+[ul_parse] Item is '*'
+[handle_special] handle_special(*)
+[ul_parse] Start: 3
+[ul_parse] End:   3
+[ul_parse] Item is '*'
+[handle_special] handle_special(*)
+[ul_parse] Parse unit: '5! * kg^2'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is '5!'
+[handle_special] handle_special(5!)
+[handle_special] not special!
+[handle_unit] Parse item: '5!'
+[unit_and_prefix] Got prefix: 5
+[ul_parse] Parse unit: '5 * kg^2!'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   2
+[ul_parse] Item is '*'
+[handle_special] handle_special(*)
+[ul_parse] Start: 4
+[ul_parse] End:   9
+[ul_parse] Item is 'kg^2!'
+[handle_special] handle_special(kg^2!)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg^2!'
+[ul_parse] Parse unit: 'sqrt kg^2)'
+[ul_parse] Start: 0
+[ul_parse] End:   4
+[ul_parse] Item is 'sqrt'
+[handle_special] handle_special(sqrt)
+[handle_special] Found sqrt
+[ul_parse] Start: 5
+[ul_parse] End:   9
+[ul_parse] Item is 'kg^2'
+[handle_special] handle_special(kg^2)
+[ul_parse] Parse unit: '( kg^2 m'
+[ul_parse] Start: 0
+[ul_parse] End:   0
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 2
+[ul_parse] End:   6
+[ul_parse] Item is 'kg^2'
+[handle_special] handle_special(kg^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg^2'
+[ul_parse] Start: 7
+[ul_parse] End:   8
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Parse unit: '(((((((((((((((((((((((((((((((((((((((((((((((('
+[ul_parse] Start: 0
+[ul_parse] End:   0
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 1
+[ul_parse] End:   1
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 1 -> 2
+[ul_parse] Start: 2
+[ul_parse] End:   2
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 2 -> 3
+[ul_parse] Start: 3
+[ul_parse] End:   3
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 3 -> 4
+[ul_parse] Start: 4
+[ul_parse] End:   4
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 4 -> 5
+[ul_parse] Start: 5
+[ul_parse] End:   5
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 5 -> 6
+[ul_parse] Start: 6
+[ul_parse] End:   6
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 6 -> 7
+[ul_parse] Start: 7
+[ul_parse] End:   7
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 7 -> 8
+[ul_parse] Start: 8
+[ul_parse] End:   8
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 8 -> 9
+[ul_parse] Start: 9
+[ul_parse] End:   9
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 9 -> 10
+[ul_parse] Start: 10
+[ul_parse] End:   10
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 10 -> 11
+[ul_parse] Start: 11
+[ul_parse] End:   11
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 11 -> 12
+[ul_parse] Start: 12
+[ul_parse] End:   12
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 12 -> 13
+[ul_parse] Start: 13
+[ul_parse] End:   13
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 13 -> 14
+[ul_parse] Start: 14
+[ul_parse] End:   14
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 14 -> 15
+[ul_parse] Start: 15
+[ul_parse] End:   15
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 15 -> 16
+[ul_parse_rule] Parsing rule ''
+[ul_parse_rule] Parsing rule ' ='
+[ul_parse_rule] Split at 1
+[ul_parse_rule] Parsing rule '16 = 16'
+[ul_parse_rule] Split at 3
+[get_symbol] Allocate 3 bytes
+[get_symbol] Symbol is '16'
+[ul_parse_rule] Parsing rule ' a b = s '
+[ul_parse_rule] Split at 5
+[ul_parse_rule] Parsing rule ' c == kg'
+[ul_parse_rule] Split at 3
+[get_symbol] Allocate 2 bytes
+[get_symbol] Symbol is 'c'
+[ul_parse_rule] Rest definition is '= kg'
+[ul_parse] Parse unit: '= kg'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '='
+[handle_special] handle_special(=)
+[handle_special] not special!
+[handle_unit] Parse item: '='
+[unit_and_prefix] Got prefix: =
+[ul_parse_rule] Parsing rule 'd = e'
+[ul_parse_rule] Split at 2
+[get_symbol] Allocate 2 bytes
+[get_symbol] Symbol is 'd'
+[ul_parse_rule] Rest definition is ' e'
+[ul_parse] Parse unit: ' e'
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is 'e'
+[handle_special] handle_special(e)
+[handle_special] not special!
+[handle_unit] Parse item: 'e'
+[unit_and_prefix] Got prefix: e
+[ul_parse_rule] Parsing rule ' = kg'
+[ul_parse_rule] Split at 1
+[ul_parse_rule] Parsing rule ''
+[ul_parse_rule] Parsing rule 'EmptySymbol = '
+[ul_parse_rule] Split at 12
+[get_symbol] Allocate 12 bytes
+[get_symbol] Symbol is 'EmptySymbol'
+[ul_parse_rule] Rest definition is ' '
+[ul_parse] Parse unit: ' '
+[ul_parse] Start: 1
+[ul_parse] End:   1
+[ul_parse] Parse unit: 'EmptySymbol'
+[ul_parse] Start: 0
+[ul_parse] End:   11
+[ul_parse] Item is 'EmptySymbol'
+[handle_special] handle_special(EmptySymbol)
+[handle_special] not special!
+[handle_unit] Parse item: 'EmptySymbol'
+[ul_parse_rule] Parsing rule '!ForcedRule = kg'
+[ul_parse_rule] Split at 12
+[get_symbol] Forced rule.
+[get_symbol] Allocate 11 bytes
+[get_symbol] Symbol is 'ForcedRule'
+[ul_parse_rule] Rest definition is ' kg'
+[ul_parse] Parse unit: ' kg'
+[ul_parse] Start: 1
+[ul_parse] End:   3
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Parse unit: 'ForcedRule'
+[ul_parse] Start: 0
+[ul_parse] End:   10
+[ul_parse] Item is 'ForcedRule'
+[handle_special] handle_special(ForcedRule)
+[handle_special] not special!
+[handle_unit] Parse item: 'ForcedRule'
+[ul_parse_rule] Parsing rule 'NewRule = kg'
+[ul_parse_rule] Split at 8
+[get_symbol] Allocate 8 bytes
+[get_symbol] Symbol is 'NewRule'
+[ul_parse_rule] Rest definition is ' kg'
+[ul_parse] Parse unit: ' kg'
+[ul_parse] Start: 1
+[ul_parse] End:   3
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Parse unit: 'NewRule'
+[ul_parse] Start: 0
+[ul_parse] End:   7
+[ul_parse] Item is 'NewRule'
+[handle_special] handle_special(NewRule)
+[handle_special] not special!
+[handle_unit] Parse item: 'NewRule'
+[ul_parse_rule] Parsing rule '!NewRule = s'
+[ul_parse_rule] Split at 9
+[get_symbol] Forced rule.
+[get_symbol] Allocate 8 bytes
+[get_symbol] Symbol is 'NewRule'
+[ul_parse_rule] Rest definition is ' s'
+[ul_parse] Parse unit: ' s'
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is 's'
+[handle_special] handle_special(s)
+[handle_special] not special!
+[handle_unit] Parse item: 's'
+[ul_parse] Parse unit: 'NewRule'
+[ul_parse] Start: 0
+[ul_parse] End:   7
+[ul_parse] Item is 'NewRule'
+[handle_special] handle_special(NewRule)
+[handle_special] not special!
+[handle_unit] Parse item: 'NewRule'
+[ul_parse_rule] Parsing rule '!NewRule = m'
+[ul_parse_rule] Split at 9
+[get_symbol] Forced rule.
+[get_symbol] Allocate 8 bytes
+[get_symbol] Symbol is 'NewRule'
+[ul_parse_rule] Parsing rule '!kg = kg'
+[ul_parse_rule] Split at 4
+[get_symbol] Forced rule.
+[get_symbol] Allocate 3 bytes
+[get_symbol] Symbol is 'kg'
+[ul_parse_rule] Parsing rule ' Recurse = m'
+[ul_parse_rule] Split at 9
+[get_symbol] Allocate 8 bytes
+[get_symbol] Symbol is 'Recurse'
+[ul_parse_rule] Rest definition is ' m'
+[ul_parse] Parse unit: ' m'
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse_rule] Parsing rule '!Recurse = Recurse'
+[ul_parse_rule] Split at 9
+[get_symbol] Forced rule.
+[get_symbol] Allocate 8 bytes
+[get_symbol] Symbol is 'Recurse'
+[ul_parse_rule] Rest definition is ' Recurse'
+[ul_parse] Parse unit: ' Recurse'
+[ul_parse] Start: 1
+[ul_parse] End:   8
+[ul_parse] Item is 'Recurse'
+[handle_special] handle_special(Recurse)
+[handle_special] not special!
+[handle_unit] Parse item: 'Recurse'
+[unit_and_prefix] Got prefix: R
+[ul_parse] Parse unit: '5 Ym'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Ym'
+[handle_special] handle_special(Ym)
+[handle_special] not special!
+[handle_unit] Parse item: 'Ym'
+[unit_and_prefix] Got prefix: Y
+[ul_parse] Parse unit: 'Yg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Yg'
+[handle_special] handle_special(Yg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Yg'
+[unit_and_prefix] Got prefix: Y
+[ul_parse] Parse unit: '5 Zm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Zm'
+[handle_special] handle_special(Zm)
+[handle_special] not special!
+[handle_unit] Parse item: 'Zm'
+[unit_and_prefix] Got prefix: Z
+[ul_parse] Parse unit: 'Zg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Zg'
+[handle_special] handle_special(Zg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Zg'
+[unit_and_prefix] Got prefix: Z
+[ul_parse] Parse unit: '5 Em'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Em'
+[handle_special] handle_special(Em)
+[handle_special] not special!
+[handle_unit] Parse item: 'Em'
+[unit_and_prefix] Got prefix: E
+[ul_parse] Parse unit: 'Eg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Eg'
+[handle_special] handle_special(Eg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Eg'
+[unit_and_prefix] Got prefix: E
+[ul_parse] Parse unit: '5 Pm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Pm'
+[handle_special] handle_special(Pm)
+[handle_special] not special!
+[handle_unit] Parse item: 'Pm'
+[unit_and_prefix] Got prefix: P
+[ul_parse] Parse unit: 'Pg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Pg'
+[handle_special] handle_special(Pg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Pg'
+[unit_and_prefix] Got prefix: P
+[ul_parse] Parse unit: '5 Tm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Tm'
+[handle_special] handle_special(Tm)
+[handle_special] not special!
+[handle_unit] Parse item: 'Tm'
+[unit_and_prefix] Got prefix: T
+[ul_parse] Parse unit: 'Tg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Tg'
+[handle_special] handle_special(Tg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Tg'
+[unit_and_prefix] Got prefix: T
+[ul_parse] Parse unit: '5 Gm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Gm'
+[handle_special] handle_special(Gm)
+[handle_special] not special!
+[handle_unit] Parse item: 'Gm'
+[unit_and_prefix] Got prefix: G
+[ul_parse] Parse unit: 'Gg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Gg'
+[handle_special] handle_special(Gg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Gg'
+[unit_and_prefix] Got prefix: G
+[ul_parse] Parse unit: '5 Mm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'Mm'
+[handle_special] handle_special(Mm)
+[handle_special] not special!
+[handle_unit] Parse item: 'Mm'
+[unit_and_prefix] Got prefix: M
+[ul_parse] Parse unit: 'Mg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'Mg'
+[handle_special] handle_special(Mg)
+[handle_special] not special!
+[handle_unit] Parse item: 'Mg'
+[unit_and_prefix] Got prefix: M
+[ul_parse] Parse unit: '5 km'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'km'
+[handle_special] handle_special(km)
+[handle_special] not special!
+[handle_unit] Parse item: 'km'
+[unit_and_prefix] Got prefix: k
+[ul_parse] Parse unit: 'kg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Parse unit: '5 hm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'hm'
+[handle_special] handle_special(hm)
+[handle_special] not special!
+[handle_unit] Parse item: 'hm'
+[unit_and_prefix] Got prefix: h
+[ul_parse] Parse unit: 'hg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'hg'
+[handle_special] handle_special(hg)
+[handle_special] not special!
+[handle_unit] Parse item: 'hg'
+[unit_and_prefix] Got prefix: h
+[ul_parse] Parse unit: '5  m'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 3
+[ul_parse] End:   4
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Parse unit: ' g'
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is 'g'
+[handle_special] handle_special(g)
+[handle_special] not special!
+[handle_unit] Parse item: 'g'
+[ul_parse] Parse unit: '5 dm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'dm'
+[handle_special] handle_special(dm)
+[handle_special] not special!
+[handle_unit] Parse item: 'dm'
+[unit_and_prefix] Got prefix: d
+[ul_parse] Parse unit: 'dg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'dg'
+[handle_special] handle_special(dg)
+[handle_special] not special!
+[handle_unit] Parse item: 'dg'
+[unit_and_prefix] Got prefix: d
+[ul_parse] Parse unit: '5 cm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'cm'
+[handle_special] handle_special(cm)
+[handle_special] not special!
+[handle_unit] Parse item: 'cm'
+[unit_and_prefix] Got prefix: c
+[ul_parse] Parse unit: 'cg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'cg'
+[handle_special] handle_special(cg)
+[handle_special] not special!
+[handle_unit] Parse item: 'cg'
+[unit_and_prefix] Got prefix: c
+[ul_parse] Parse unit: '5 mm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'mm'
+[handle_special] handle_special(mm)
+[handle_special] not special!
+[handle_unit] Parse item: 'mm'
+[unit_and_prefix] Got prefix: m
+[ul_parse] Parse unit: 'mg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'mg'
+[handle_special] handle_special(mg)
+[handle_special] not special!
+[handle_unit] Parse item: 'mg'
+[unit_and_prefix] Got prefix: m
+[ul_parse] Parse unit: '5 um'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'um'
+[handle_special] handle_special(um)
+[handle_special] not special!
+[handle_unit] Parse item: 'um'
+[unit_and_prefix] Got prefix: u
+[ul_parse] Parse unit: 'ug'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'ug'
+[handle_special] handle_special(ug)
+[handle_special] not special!
+[handle_unit] Parse item: 'ug'
+[unit_and_prefix] Got prefix: u
+[ul_parse] Parse unit: '5 nm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'nm'
+[handle_special] handle_special(nm)
+[handle_special] not special!
+[handle_unit] Parse item: 'nm'
+[unit_and_prefix] Got prefix: n
+[ul_parse] Parse unit: 'ng'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'ng'
+[handle_special] handle_special(ng)
+[handle_special] not special!
+[handle_unit] Parse item: 'ng'
+[unit_and_prefix] Got prefix: n
+[ul_parse] Parse unit: '5 pm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'pm'
+[handle_special] handle_special(pm)
+[handle_special] not special!
+[handle_unit] Parse item: 'pm'
+[unit_and_prefix] Got prefix: p
+[ul_parse] Parse unit: 'pg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'pg'
+[handle_special] handle_special(pg)
+[handle_special] not special!
+[handle_unit] Parse item: 'pg'
+[unit_and_prefix] Got prefix: p
+[ul_parse] Parse unit: '5 fm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'fm'
+[handle_special] handle_special(fm)
+[handle_special] not special!
+[handle_unit] Parse item: 'fm'
+[unit_and_prefix] Got prefix: f
+[ul_parse] Parse unit: 'fg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'fg'
+[handle_special] handle_special(fg)
+[handle_special] not special!
+[handle_unit] Parse item: 'fg'
+[unit_and_prefix] Got prefix: f
+[ul_parse] Parse unit: '5 am'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'am'
+[handle_special] handle_special(am)
+[handle_special] not special!
+[handle_unit] Parse item: 'am'
+[unit_and_prefix] Got prefix: a
+[ul_parse] Parse unit: 'ag'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'ag'
+[handle_special] handle_special(ag)
+[handle_special] not special!
+[handle_unit] Parse item: 'ag'
+[unit_and_prefix] Got prefix: a
+[ul_parse] Parse unit: '5 zm'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'zm'
+[handle_special] handle_special(zm)
+[handle_special] not special!
+[handle_unit] Parse item: 'zm'
+[unit_and_prefix] Got prefix: z
+[ul_parse] Parse unit: 'zg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'zg'
+[handle_special] handle_special(zg)
+[handle_special] not special!
+[handle_unit] Parse item: 'zg'
+[unit_and_prefix] Got prefix: z
+[ul_parse] Parse unit: '5 ym'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '5'
+[handle_special] handle_special(5)
+[handle_special] not special!
+[handle_factor] '5' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'ym'
+[handle_special] handle_special(ym)
+[handle_special] not special!
+[handle_unit] Parse item: 'ym'
+[unit_and_prefix] Got prefix: y
+[ul_parse] Parse unit: 'yg'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'yg'
+[handle_special] handle_special(yg)
+[handle_special] not special!
+[handle_unit] Parse item: 'yg'
+[unit_and_prefix] Got prefix: y
+[ul_parse] Parse unit: 'kg / s'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Start: 3
+[ul_parse] End:   3
+[ul_parse] Item is '/'
+[handle_special] handle_special(/)
+[ul_parse] Start: 5
+[ul_parse] End:   6
+[ul_parse] Item is 's'
+[handle_special] handle_special(s)
+[handle_special] not special!
+[handle_unit] Parse item: 's'
+[ul_parse] Parse unit: '8 kg / 4 s'
+[ul_parse] Start: 0
+[ul_parse] End:   1
+[ul_parse] Item is '8'
+[handle_special] handle_special(8)
+[handle_special] not special!
+[handle_factor] '8' is a factor
+[ul_parse] Start: 2
+[ul_parse] End:   4
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Start: 5
+[ul_parse] End:   5
+[ul_parse] Item is '/'
+[handle_special] handle_special(/)
+[ul_parse] Start: 7
+[ul_parse] End:   8
+[ul_parse] Item is '4'
+[handle_special] handle_special(4)
+[handle_special] not special!
+[handle_factor] '4' is a factor
+[ul_parse] Start: 9
+[ul_parse] End:   10
+[ul_parse] Item is 's'
+[handle_special] handle_special(s)
+[handle_special] not special!
+[handle_unit] Parse item: 's'
+[ul_parse] Parse unit: 'sqrt(4 kg^2)'
+[ul_parse] Start: 0
+[ul_parse] End:   4
+[ul_parse] Item is 'sqrt'
+[handle_special] handle_special(sqrt)
+[handle_special] Found sqrt
+[ul_parse] Start: 4
+[ul_parse] End:   4
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 5
+[ul_parse] End:   6
+[ul_parse] Item is '4'
+[handle_special] handle_special(4)
+[handle_special] not special!
+[handle_factor] '4' is a factor
+[ul_parse] Start: 7
+[ul_parse] End:   11
+[ul_parse] Item is 'kg^2'
+[handle_special] handle_special(kg^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg^2'
+[ul_parse] Start: 11
+[ul_parse] End:   11
+[ul_parse] Item is ')'
+[handle_special] handle_special())
+[ul_parse] Parse unit: 'sqrt(kg^2/m^2) kg'
+[ul_parse] Start: 0
+[ul_parse] End:   4
+[ul_parse] Item is 'sqrt'
+[handle_special] handle_special(sqrt)
+[handle_special] Found sqrt
+[ul_parse] Start: 4
+[ul_parse] End:   4
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 5
+[ul_parse] End:   9
+[ul_parse] Item is 'kg^2'
+[handle_special] handle_special(kg^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg^2'
+[ul_parse] Start: 9
+[ul_parse] End:   9
+[ul_parse] Item is '/'
+[handle_special] handle_special(/)
+[ul_parse] Start: 10
+[ul_parse] End:   13
+[ul_parse] Item is 'm^2'
+[handle_special] handle_special(m^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'm^2'
+[ul_parse] Start: 13
+[ul_parse] End:   13
+[ul_parse] Item is ')'
+[handle_special] handle_special())
+[ul_parse] Start: 15
+[ul_parse] End:   17
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Parse unit: '(m s)^2'
+[ul_parse] Start: 0
+[ul_parse] End:   0
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Start: 3
+[ul_parse] End:   4
+[ul_parse] Item is 's'
+[handle_special] handle_special(s)
+[handle_special] not special!
+[handle_unit] Parse item: 's'
+[ul_parse] Exp hack!
+[ul_parse] Start: 4
+[ul_parse] End:   7
+[ul_parse] Item is ')^2'
+[handle_special] handle_special()^2)
+[ul_parse] Parse unit: 'kg*m^2/(s^4 kg) sqrt(A^2 K^4)'
+[ul_parse] Start: 0
+[ul_parse] End:   2
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Start: 2
+[ul_parse] End:   2
+[ul_parse] Item is '*'
+[handle_special] handle_special(*)
+[ul_parse] Start: 3
+[ul_parse] End:   6
+[ul_parse] Item is 'm^2'
+[handle_special] handle_special(m^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'm^2'
+[ul_parse] Start: 6
+[ul_parse] End:   6
+[ul_parse] Item is '/'
+[handle_special] handle_special(/)
+[ul_parse] Start: 7
+[ul_parse] End:   7
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 8
+[ul_parse] End:   11
+[ul_parse] Item is 's^4'
+[handle_special] handle_special(s^4)
+[handle_special] not special!
+[handle_unit] Parse item: 's^4'
+[ul_parse] Start: 12
+[ul_parse] End:   14
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Start: 14
+[ul_parse] End:   14
+[ul_parse] Item is ')'
+[handle_special] handle_special())
+[ul_parse] Start: 16
+[ul_parse] End:   20
+[ul_parse] Item is 'sqrt'
+[handle_special] handle_special(sqrt)
+[handle_special] Found sqrt
+[ul_parse] Start: 20
+[ul_parse] End:   20
+[ul_parse] Item is '('
+[handle_special] handle_special(()
+[push_unit] Push: 0 -> 1
+[ul_parse] Start: 21
+[ul_parse] End:   24
+[ul_parse] Item is 'A^2'
+[handle_special] handle_special(A^2)
+[handle_special] not special!
+[handle_unit] Parse item: 'A^2'
+[ul_parse] Start: 25
+[ul_parse] End:   28
+[ul_parse] Item is 'K^4'
+[handle_special] handle_special(K^4)
+[handle_special] not special!
+[handle_unit] Parse item: 'K^4'
+[ul_parse] Start: 28
+[ul_parse] End:   28
+[ul_parse] Item is ')'
+[handle_special] handle_special())
+[ul_parse_rule] Parsing rule 'N = 1 kg m s^-2'
+[ul_parse_rule] Split at 2
+[get_symbol] Allocate 2 bytes
+[get_symbol] Symbol is 'N'
+[ul_parse_rule] Rest definition is ' 1 kg m s^-2'
+[ul_parse] Parse unit: ' 1 kg m s^-2'
+[ul_parse] Start: 1
+[ul_parse] End:   2
+[ul_parse] Item is '1'
+[handle_special] handle_special(1)
+[handle_special] not special!
+[handle_factor] '1' is a factor
+[ul_parse] Start: 3
+[ul_parse] End:   5
+[ul_parse] Item is 'kg'
+[handle_special] handle_special(kg)
+[handle_special] not special!
+[handle_unit] Parse item: 'kg'
+[ul_parse] Start: 6
+[ul_parse] End:   7
+[ul_parse] Item is 'm'
+[handle_special] handle_special(m)
+[handle_special] not special!
+[handle_unit] Parse item: 'm'
+[ul_parse] Start: 8
+[ul_parse] End:   12
+[ul_parse] Item is 's^-2'
+[handle_special] handle_special(s^-2)
+[handle_special] not special!
+[handle_unit] Parse item: 's^-2'

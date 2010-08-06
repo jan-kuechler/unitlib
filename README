@@ -22,7 +22,6 @@ short description.
 
 + Planed features
 
- * Parsing support for something like "N sqrt(m^2/s^2) * (A/s)^2".
  * Find best composed unit for unclear matches ("kg m^2 s^-2" -> "N m").
 
 + What programs are using unitlib?

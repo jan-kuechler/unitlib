@@ -2,13 +2,23 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+#include <math.h>
 #include "unitlib.h"
-#include "intern.h"
 
 // yay, self include (-:
 #define GET_TEST_DEFS
 #include "unittest.c"
 #undef GET_TEST_DEFS
+
+static inline int ncmp(ul_number a, ul_number b)
+{
+	if (_fabsn(a-b) < N_EPSILON)
+		return 0;
+	if (a < b)
+		return -1;
+	return 1;
+}
 
 static unit_t make_unit(ul_number fac, ...)
 {
@@ -503,7 +513,7 @@ END_TEST_SUITE()
 int main(void)
 {
 	ul_debugging(true);
-	ul_debugout("utest-debug.log", false);
+	ul_debugout("test/utest-debug.log", false);
 	if (!ul_init()) {
 		printf("ul_init failed: %s", ul_error());
 		return 1;

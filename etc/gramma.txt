@@ -1,0 +1,21 @@
+Definiton = (Name) '=' (Expr)
+
+Expr = (Part) { ('*' | '/') (Part) } ;
+
+Part = ( (Function) | (Factor) | (Unit) | '(' Expr ')' [(Exponent)]);
+
+Function = (Name) '(' (Expr) ')';
+
+Factor = ['+'|'-'] (Float);
+
+Unit = (Name) [(Exponent)];
+
+Exponent = '^' (Int);
+
+Float = ['+' | '-'] (Int) ['.' (Int)];
+
+Int = (Number) { (Number) };
+
+Number = '0' - '9';
+
+Name = ('a' - 'Z') { ('a' - 'Z') };
