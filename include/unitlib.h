@@ -70,9 +70,8 @@ typedef struct unit
 UL_API bool ul_init(void);
 
 /**
- * Deinitializes the unitlib and frees all. This function
- * has to be called at the end of the program.
- * internals resources.
+ * Deinitializes the unitlib and frees all internals resources.
+ * This function has to be called at the end of the program.
  */
 UL_API void ul_quit(void);
 
